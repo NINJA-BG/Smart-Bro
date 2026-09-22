@@ -1,0 +1,40 @@
+{
+  "entities": [
+    {
+      "name": "comparisons",
+      "fields": [
+        { "name": "id", "type": "string", "description": "Unique ID of comparison" },
+        { "name": "customerName", "type": "string", "description": "Customer name" },
+        { "name": "isMarked", "type": "boolean", "description": "Whether item is pinned/starred" },
+        { "name": "selectedPlanIds", "type": "array", "description": "List of selected plan IDs" },
+        { "name": "selectedPlanNames", "type": "array", "description": "List of plan names" },
+        { "name": "agentFirstName", "type": "string", "description": "Agent first name" },
+        { "name": "agentLastName", "type": "string", "description": "Agent last name" },
+        { "name": "agentOfficeCode", "type": "string", "description": "Agent branch/code" },
+        { "name": "agentPhone", "type": "string", "description": "Agent contact phone" },
+        { "name": "userAge", "type": "number", "description": "Customer age at calculation" },
+        { "name": "existingCustomerIdCard", "type": "string", "description": "Customer ID card if existing" },
+        { "name": "notes", "type": "string", "description": "Notes on the proposal" },
+        { "name": "timestamp", "type": "number", "description": "Unix timestamp in ms" },
+        { "name": "createdAt", "type": "string", "description": "ISO date string" }
+      ]
+    },
+    {
+      "name": "customers",
+      "fields": [
+        { "name": "idCard", "type": "string", "description": "13-digit Thai national ID" },
+        { "name": "fullName", "type": "string", "description": "Customer full name" },
+        { "name": "birthDate", "type": "string", "description": "Birth date YYYY-MM-DD" },
+        { "name": "age", "type": "number", "description": "Current age" },
+        { "name": "phone", "type": "string", "description": "Phone number" },
+        { "name": "existingPlanId", "type": "string", "description": "Current insurance plan ID" },
+        { "name": "policyNumber", "type": "string", "description": "Existing policy number" },
+        { "name": "startDate", "type": "string", "description": "Policy start date" },
+        { "name": "lossClaimRate", "type": "number", "description": "Claim loss ratio percentage" },
+        { "name": "lossClaimStatus", "type": "string", "description": "Claim status text" },
+        { "name": "lineOaRegistered", "type": "boolean", "description": "Line OA registration status" },
+        { "name": "lineOaStatusText", "type": "string", "description": "Line OA status text" }
+      ]
+    }
+  ]
+}
