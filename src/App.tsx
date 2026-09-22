@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { INSURANCE_PLANS } from './data/plans';
 import { MOCK_EXISTING_CUSTOMERS } from './data/customers';
-import { ViewFilterMode, ExportMeta, CustomerProfile, ComparisonHistoryItem } from './types';
+import { ViewFilterMode, ExportMeta, CustomerProfile, ComparisonHistoryItem, InsurancePlan } from './types';
 import { SmileSaleSidebar } from './components/SmileSaleSidebar';
 import { SmileSaleHeader } from './components/SmileSaleHeader';
 import { SmileSaleSearchCard } from './components/SmileSaleSearchCard';
@@ -14,7 +14,16 @@ import { PlanSelector } from './components/PlanSelector';
 import { ComparisonTable } from './components/ComparisonTable';
 import { ExportModal } from './components/ExportModal';
 import { HistoryModal } from './components/HistoryModal';
+import { PlanSettingsModal } from './components/PlanSettingsModal';
 import { triggerPrint } from './utils/pdfExport';
+import {
+  loadStoredPlans,
+  saveStoredPlans,
+  resetStoredPlans,
+  loadCoordinatorSettings,
+  saveCoordinatorSettings,
+  CoordinatorInfo,
+} from './utils/planStorage';
 import {
   getComparisonHistory,
   saveComparisonHistoryItem,
@@ -42,11 +51,15 @@ export default function App() {
   const [userDob, setUserDob] = useState<string>('1995-05-15');
   const [existingCustomer, setExistingCustomer] = useState<CustomerProfile | null>(null);
 
-  // Selected plans (up to 3 plans, default to 2 plans for quick comparison & combined view)
-  const [selectedPlanIds, setSelectedPlanIds] = useState<string[]>([
-    'plan-15-i',
-    'plan-15-o',
-  ]);
+  // Plans & Settings state
+  const [plans, setPlans] = useState<InsurancePlan[]>(() => loadStoredPlans());
+  const [coordinatorInfo, setCoordinatorInfo] = useState<CoordinatorInfo>(() =>
+    loadCoordinatorSettings()
+  );
+  const [isPlanSettingsOpen, setIsPlanSettingsOpen] = useState<boolean>(false);
+
+  // Selected plans for comparison (empty by default, user selects freely)
+  const [selectedPlanIds, setSelectedPlanIds] = useState<string[]>([]);
 
   const [filterMode, setFilterMode] = useState<ViewFilterMode>('all');
   const [highlightDiffs, setHighlightDiffs] = useState<boolean>(true);
@@ -80,6 +93,8 @@ export default function App() {
     agentLastName: initialAgent.agentLastName || '',
     agentOfficeCode: initialAgent.agentOfficeCode || '05741',
     agentPhone: initialAgent.agentPhone,
+    coordinatorName: coordinatorInfo.name,
+    coordinatorPhone: coordinatorInfo.phone,
     date: new Date().toLocaleDateString('th-TH', {
       year: 'numeric',
       month: 'long',
@@ -95,6 +110,30 @@ export default function App() {
     }, 3200);
   };
 
+  // Plan Settings Handlers
+  const handleSavePlans = (updatedPlans: InsurancePlan[]) => {
+    setPlans(updatedPlans);
+    saveStoredPlans(updatedPlans);
+    showToast('บันทึกการตั้งค่าแผนประกันเรียบร้อยแล้ว');
+  };
+
+  const handleResetPlans = () => {
+    const defaultPlans = resetStoredPlans();
+    setPlans(defaultPlans);
+    showToast('คืนค่าแผนประกันเริ่มต้นเรียบร้อยแล้ว');
+  };
+
+  const handleSaveCoordinator = (info: CoordinatorInfo) => {
+    setCoordinatorInfo(info);
+    saveCoordinatorSettings(info);
+    setExportMeta((prev) => ({
+      ...prev,
+      coordinatorName: info.name,
+      coordinatorPhone: info.phone,
+    }));
+    showToast('บันทึกข้อมูลผู้ประสานงานโครงการเรียบร้อยแล้ว');
+  };
+
   // Handle confirming age from Search Card
   const handleConfirmAge = (age: number | null, birthDateStr: string, customer?: CustomerProfile | null) => {
     setUserAge(age);
@@ -106,24 +145,16 @@ export default function App() {
         ...prev,
         customerName: customer.fullName,
         notes: `เปรียบเทียบแผนเพิ่มความคุ้มครองสำหรับลูกค้าเดิม (กรมธรรม์ ${customer.policyNumber}) แผนปัจจุบันคือ ${
-          INSURANCE_PLANS.find((p) => p.id === customer.existingPlanId)?.name || ''
+          plans.find((p) => p.id === customer.existingPlanId)?.name || ''
         }`,
       }));
 
-      // Ensure existing plan is in selection, along with 1 other eligible plan
-      const existingId = customer.existingPlanId;
-      const otherEligiblePlans = INSURANCE_PLANS.filter(
-        (p) => p.id !== existingId && (age === null || (age >= p.minAge && age <= p.maxAge))
-      );
-      const newSelection = [existingId, ...otherEligiblePlans.slice(0, 1).map((p) => p.id)];
-      setSelectedPlanIds(newSelection);
-      showToast(`ดึงข้อมูลลูกค้าเดิม คุณ${customer.fullName} พร้อมคำนวณสิทธิ์เรียบร้อยแล้ว`);
+      // Do not pre-select comparison plans automatically; let the user choose freely
+      setSelectedPlanIds([]);
+      showToast(`ดึงข้อมูลลูกค้าเดิม คุณ${customer.fullName} เรียบร้อยแล้ว`);
     } else if (age !== null) {
       setExistingCustomer(null);
-      const eligible = INSURANCE_PLANS.filter((p) => age >= p.minAge && age <= p.maxAge);
-      if (eligible.length > 0) {
-        setSelectedPlanIds(eligible.slice(0, 2).map((p) => p.id));
-      }
+      setSelectedPlanIds([]);
       showToast(`กรองแผนที่รองรับสำหรับอายุ ${age} ปี เรียบร้อยแล้ว`);
     } else {
       setExistingCustomer(null);
@@ -134,7 +165,7 @@ export default function App() {
     setExistingCustomer(null);
     setUserAge(null);
     setUserDob('');
-    setSelectedPlanIds(['plan-15-i', 'plan-15-o']);
+    setSelectedPlanIds([]);
     showToast('รีเซ็ตเงื่อนไขการค้นหาเรียบร้อยแล้ว');
   };
 
@@ -154,7 +185,7 @@ export default function App() {
     setSelectedPlanIds(planIds.slice(0, 3));
   };
 
-  const selectedPlans = INSURANCE_PLANS.filter((p) =>
+  const selectedPlans = plans.filter((p) =>
     selectedPlanIds.includes(p.id)
   );
 
@@ -244,7 +275,9 @@ export default function App() {
         activeMenu={activeMenu}
         onSelectMenu={(menu) => {
           setActiveMenu(menu);
-          if (menu === 'smart-brochure') {
+          if (menu === 'benefits-ph' || menu === 'plan-settings') {
+            setIsPlanSettingsOpen(true);
+          } else if (menu === 'smart-brochure') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         }}
@@ -261,6 +294,7 @@ export default function App() {
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           onOpenHistory={() => setIsHistoryModalOpen(true)}
           onOpenExport={() => setIsExportModalOpen(true)}
+          onOpenPlanSettings={() => setIsPlanSettingsOpen(true)}
           onPrint={() => triggerPrint()}
           historyCount={historyList.length}
           markedCount={markedHistoryCount}
@@ -286,7 +320,7 @@ export default function App() {
             <SmileSaleSearchCard
               onConfirmAge={handleConfirmAge}
               onReset={handleResetSearch}
-              allPlans={INSURANCE_PLANS}
+              allPlans={plans}
               initialDob={userDob}
               existingCustomer={existingCustomer}
               currentAge={userAge}
@@ -301,16 +335,17 @@ export default function App() {
               </h2>
             </div>
 
-            {/* Plan Selector (15-I, 15-O, 610-I, 610-O) */}
+            {/* Plan Selector (15-I, 15-O, 610-I, 610-O, PA 60, PA 90, PA 120, PA 150) */}
             <div className="mb-4">
               <PlanSelector
-                allPlans={INSURANCE_PLANS}
+                allPlans={plans}
                 selectedPlanIds={selectedPlanIds}
                 onTogglePlan={handleTogglePlan}
                 onSetSelection={handleSetSelection}
                 currentAge={userAge}
                 existingCustomer={existingCustomer}
                 onResetCustomer={handleResetSearch}
+                onOpenPlanSettings={() => setIsPlanSettingsOpen(true)}
               />
             </div>
 
@@ -341,7 +376,7 @@ export default function App() {
             {/* Comprehensive Comparison Table (with Top-up Combined column & diff highlights) */}
             <ComparisonTable
               selectedPlans={selectedPlans}
-              allPlans={INSURANCE_PLANS}
+              allPlans={plans}
               filterMode={filterMode}
               onFilterModeChange={setFilterMode}
               highlightDiffs={highlightDiffs}
@@ -359,6 +394,17 @@ export default function App() {
           </section>
         </main>
       </div>
+
+      {/* Plan Settings Modal (Coverage & Custom Naming for Health & PA) */}
+      <PlanSettingsModal
+        isOpen={isPlanSettingsOpen}
+        onClose={() => setIsPlanSettingsOpen(false)}
+        plans={plans}
+        onSavePlans={handleSavePlans}
+        onResetPlans={handleResetPlans}
+        coordinatorInfo={coordinatorInfo}
+        onSaveCoordinator={handleSaveCoordinator}
+      />
 
       {/* Export / PDF Modal */}
       <ExportModal

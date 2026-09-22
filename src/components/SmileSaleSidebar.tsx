@@ -189,14 +189,24 @@ export const SmileSaleSidebar: React.FC<SmileSaleSidebarProps> = ({
                   <span>จัดการเอกสาร Brochure</span>
                 </button>
 
-                {/* จัดการสิทธิประโยชน์ PH */}
+                {/* จัดการสิทธิประโยชน์ PH (ตั้งค่าความคุ้มครองแผนประกันทุกหมวด) */}
                 <button
                   type="button"
                   onClick={() => onSelectMenu?.('benefits-ph')}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-xs text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-xs font-bold transition-all ${
+                    activeMenu === 'benefits-ph'
+                      ? 'bg-amber-400 text-slate-900 shadow-sm'
+                      : 'bg-white/10 text-amber-300 hover:bg-amber-400 hover:text-slate-900'
+                  }`}
+                  title="จัดการสิทธิประโยชน์ PH: ตั้งค่าความคุ้มครองแผนประกันสุขภาพและอุบัติเหตุทุกหมวด"
                 >
-                  <Settings className="w-3.5 h-3.5 text-sky-200" />
-                  <span>จัดการสิทธิประโยชน์ PH</span>
+                  <div className="flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-amber-300 group-hover:text-slate-900" />
+                    <span>จัดการสิทธิประโยชน์ PH</span>
+                  </div>
+                  <span className="text-[9px] bg-amber-500/30 text-white px-1.5 py-0.5 rounded font-bold border border-amber-300/40">
+                    ตั้งค่าแผน
+                  </span>
                 </button>
 
                 {/* จัดการสิทธิประโยชน์ Motor */}

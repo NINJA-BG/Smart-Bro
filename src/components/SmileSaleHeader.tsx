@@ -8,6 +8,7 @@ import {
   FileDown,
   User,
   History,
+  Settings,
 } from 'lucide-react';
 import { ExportMeta, CustomerProfile } from '../types';
 
@@ -15,6 +16,7 @@ interface SmileSaleHeaderProps {
   onToggleSidebar: () => void;
   onOpenHistory: () => void;
   onOpenExport: () => void;
+  onOpenPlanSettings?: () => void;
   onPrint: () => void;
   historyCount: number;
   markedCount: number;
@@ -26,6 +28,7 @@ export const SmileSaleHeader: React.FC<SmileSaleHeaderProps> = ({
   onToggleSidebar,
   onOpenHistory,
   onOpenExport,
+  onOpenPlanSettings,
   onPrint,
   historyCount,
   markedCount,
@@ -59,11 +62,11 @@ export const SmileSaleHeader: React.FC<SmileSaleHeaderProps> = ({
         {/* Right Action Icons & User Profile */}
         <div className="flex items-center gap-2 sm:gap-4">
           {/* Quick Print & Export Buttons */}
-          <div className="hidden md:flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={onPrint}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
               title="พิมพ์เอกสารเปรียบเทียบ"
             >
               <Printer className="w-3.5 h-3.5 text-slate-600" />
@@ -73,7 +76,7 @@ export const SmileSaleHeader: React.FC<SmileSaleHeaderProps> = ({
             <button
               type="button"
               onClick={onOpenExport}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00509d] hover:bg-[#003e7a] text-white text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00509d] hover:bg-[#003e7a] text-white text-xs font-bold shadow-2xs transition-colors cursor-pointer"
               title="ส่งออกเอกสาร PDF หรือบันทึก"
             >
               <FileDown className="w-3.5 h-3.5" />

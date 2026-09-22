@@ -5,6 +5,7 @@ export const INSURANCE_PLANS: InsurancePlan[] = [
     id: 'plan-15-i',
     code: '15-I',
     name: 'แผน 15-I',
+    category: 'health',
     badge: 'คุ้มครองชีวิตสูง',
     badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300',
     description: 'เน้นผู้ป่วยใน (IPD) ค่าห้อง 1,200 บ. คุ้มครองอุบัติเหตุสูง 200,000 บ.',
@@ -63,6 +64,7 @@ export const INSURANCE_PLANS: InsurancePlan[] = [
     id: 'plan-15-o',
     code: '15-O',
     name: 'แผน 15-O',
+    category: 'health',
     badge: 'ยอดนิยม ครบ OPD+IPD',
     badgeColor: 'bg-blue-100 text-blue-800 border-blue-300',
     description: 'ครบทั้งผู้ป่วยใน (IPD) และผู้ป่วยนอก OPD โรคทั่วไป 500 บ./ครั้ง (9 ครั้ง/ปี)',
@@ -123,6 +125,7 @@ export const INSURANCE_PLANS: InsurancePlan[] = [
     id: 'plan-610-i',
     code: '610-I',
     name: 'แผน 610-I',
+    category: 'health',
     badge: 'เบี้ยประหยัดสุด',
     badgeColor: 'bg-purple-100 text-purple-800 border-purple-300',
     description: 'เบี้ยสบายกระเป๋าเพียง 590 บ./เดือน คุ้มครองผู้ป่วยในและชีวิต 200,000 บ.',
@@ -149,7 +152,7 @@ export const INSURANCE_PLANS: InsurancePlan[] = [
       note: 'สูงสุดไม่เกิน 45 คืน ต่อครั้ง ต่อโรค',
     },
     opd: {
-      accident: 2000,
+      accident: 4000,
       illness: {
         covered: false,
         note: 'ไม่คุ้มครอง',
@@ -181,6 +184,7 @@ export const INSURANCE_PLANS: InsurancePlan[] = [
     id: 'plan-610-o',
     code: '610-O',
     name: 'แผน 610-O',
+    category: 'health',
     badge: 'ชดเชยรายวันสูงพิเศษ',
     badgeColor: 'bg-amber-100 text-amber-800 border-amber-300',
     description: 'ชดเชยรายวันสูงสุด 1,200 บ./คืน (กรณีใช้สิทธิ์อื่นได้ 3,000 บ.) + OPD 500 บ. (9 ครั้ง/ปี)',
@@ -235,6 +239,293 @@ export const INSURANCE_PLANS: InsurancePlan[] = [
       murderAssault: 3000,
       motorcycle: 3000,
       funeralBenefit: 3000,
+    },
+  },
+  // ==========================================
+  // แผนประกันอุบัติเหตุส่วนบุคคลเพิ่มเติม (Smile PA)
+  // ==========================================
+  {
+    id: 'plan-pa-60',
+    code: 'PA60',
+    name: 'แผน PA60',
+    category: 'pa',
+    badge: 'อุบัติเหตุ 60 บ./ด.',
+    badgeColor: 'bg-sky-100 text-sky-800 border-sky-300',
+    description: 'เบี้ย 60 บ./ด. ค่ารักษาอุบัติเหตุ 10,000 บ./ครั้ง คุ้มครองชีวิต/ทุพพลภาพถาวร 200,000 บ.',
+    monthlyPremium: 60,
+    annualPremium: 720,
+    minAge: 6,
+    maxAge: 60,
+    ageRangeText: '6 - 60 ปี',
+    roomNormal: {
+      perNight: 0,
+      maxLimit: 0,
+      note: 'ไม่มีสิทธิ์ค่าห้อง (แผนอุบัติเหตุ PA)',
+    },
+    roomICU: {
+      perNight: 0,
+      maxLimit: 0,
+      note: 'ไม่มีสิทธิ์ค่าห้อง (แผนอุบัติเหตุ PA)',
+    },
+    medicalGeneralPerVisit: 0,
+    surgeryPerDisorder: 0,
+    doctorVisitPerNight: {
+      perNight: 0,
+      maxLimit: 0,
+    },
+    opd: {
+      accident: 10000,
+      illness: {
+        covered: false,
+        note: 'ไม่คุ้มครองโรคทั่วไป (คุ้มครองเฉพาะอุบัติเหตุ)',
+      },
+    },
+    dailyCompensation: {
+      perNight: 0,
+      maxLimit: 0,
+      note: 'ไม่มีค่าชดเชยรายวัน',
+    },
+    otherRightsNormalRoom: {
+      perNight: 0,
+      maxLimit: 0,
+    },
+    otherRightsICU: {
+      perNight: 0,
+      maxLimit: 0,
+    },
+    life: {
+      accidentGeneral: 200000,
+      murderAssault: 100000,
+      motorcycle: 100000,
+      funeralBenefit: 0,
+    },
+    paSchedule: {
+      permanentDisability: 200000,
+      twoLimbsOrEyes: 200000,
+      oneLimbOrEye: 120000,
+      deafBothOrMute: 100000,
+      thumbTwoJoints: 50000,
+      deafOneEar: 30000,
+      thumbOneJoint: 20000,
+      indexFingerThreeJoints: 20000,
+      indexFingerTwoJoints: 16000,
+      indexFingerOneJoint: 8000,
+      otherFingersTwoJoints: 10000,
+      bigToe: 10000,
+      otherFingersOneJoint: 2000,
+    },
+  },
+  {
+    id: 'plan-pa-90',
+    code: 'PA90',
+    name: 'แผน PA90',
+    category: 'pa',
+    badge: 'อุบัติเหตุ 90 บ./ด.',
+    badgeColor: 'bg-sky-100 text-sky-800 border-sky-300',
+    description: 'เบี้ย 90 บ./ด. ค่ารักษาอุบัติเหตุ 15,000 บ./ครั้ง คุ้มครองชีวิต/ทุพพลภาพถาวร 300,000 บ.',
+    monthlyPremium: 90,
+    annualPremium: 1080,
+    minAge: 6,
+    maxAge: 60,
+    ageRangeText: '6 - 60 ปี',
+    roomNormal: {
+      perNight: 0,
+      maxLimit: 0,
+      note: 'ไม่มีสิทธิ์ค่าห้อง (แผนอุบัติเหตุ PA)',
+    },
+    roomICU: {
+      perNight: 0,
+      maxLimit: 0,
+      note: 'ไม่มีสิทธิ์ค่าห้อง (แผนอุบัติเหตุ PA)',
+    },
+    medicalGeneralPerVisit: 0,
+    surgeryPerDisorder: 0,
+    doctorVisitPerNight: {
+      perNight: 0,
+      maxLimit: 0,
+    },
+    opd: {
+      accident: 15000,
+      illness: {
+        covered: false,
+        note: 'ไม่คุ้มครองโรคทั่วไป (คุ้มครองเฉพาะอุบัติเหตุ)',
+      },
+    },
+    dailyCompensation: {
+      perNight: 0,
+      maxLimit: 0,
+      note: 'ไม่มีค่าชดเชยรายวัน',
+    },
+    otherRightsNormalRoom: {
+      perNight: 0,
+      maxLimit: 0,
+    },
+    otherRightsICU: {
+      perNight: 0,
+      maxLimit: 0,
+    },
+    life: {
+      accidentGeneral: 300000,
+      murderAssault: 150000,
+      motorcycle: 150000,
+      funeralBenefit: 0,
+    },
+    paSchedule: {
+      permanentDisability: 300000,
+      twoLimbsOrEyes: 300000,
+      oneLimbOrEye: 180000,
+      deafBothOrMute: 150000,
+      thumbTwoJoints: 75000,
+      deafOneEar: 45000,
+      thumbOneJoint: 30000,
+      indexFingerThreeJoints: 30000,
+      indexFingerTwoJoints: 24000,
+      indexFingerOneJoint: 12000,
+      otherFingersTwoJoints: 15000,
+      bigToe: 15000,
+      otherFingersOneJoint: 3000,
+    },
+  },
+  {
+    id: 'plan-pa-120',
+    code: 'PA120',
+    name: 'แผน PA120',
+    category: 'pa',
+    badge: 'อุบัติเหตุ 120 บ./ด.',
+    badgeColor: 'bg-sky-100 text-sky-800 border-sky-300',
+    description: 'เบี้ย 120 บ./ด. ค่ารักษาอุบัติเหตุ 20,000 บ./ครั้ง คุ้มครองชีวิต/ทุพพลภาพถาวร 400,000 บ.',
+    monthlyPremium: 120,
+    annualPremium: 1440,
+    minAge: 6,
+    maxAge: 60,
+    ageRangeText: '6 - 60 ปี',
+    roomNormal: {
+      perNight: 0,
+      maxLimit: 0,
+      note: 'ไม่มีสิทธิ์ค่าห้อง (แผนอุบัติเหตุ PA)',
+    },
+    roomICU: {
+      perNight: 0,
+      maxLimit: 0,
+      note: 'ไม่มีสิทธิ์ค่าห้อง (แผนอุบัติเหตุ PA)',
+    },
+    medicalGeneralPerVisit: 0,
+    surgeryPerDisorder: 0,
+    doctorVisitPerNight: {
+      perNight: 0,
+      maxLimit: 0,
+    },
+    opd: {
+      accident: 20000,
+      illness: {
+        covered: false,
+        note: 'ไม่คุ้มครองโรคทั่วไป (คุ้มครองเฉพาะอุบัติเหตุ)',
+      },
+    },
+    dailyCompensation: {
+      perNight: 0,
+      maxLimit: 0,
+      note: 'ไม่มีค่าชดเชยรายวัน',
+    },
+    otherRightsNormalRoom: {
+      perNight: 0,
+      maxLimit: 0,
+    },
+    otherRightsICU: {
+      perNight: 0,
+      maxLimit: 0,
+    },
+    life: {
+      accidentGeneral: 400000,
+      murderAssault: 200000,
+      motorcycle: 200000,
+      funeralBenefit: 0,
+    },
+    paSchedule: {
+      permanentDisability: 400000,
+      twoLimbsOrEyes: 400000,
+      oneLimbOrEye: 240000,
+      deafBothOrMute: 200000,
+      thumbTwoJoints: 100000,
+      deafOneEar: 60000,
+      thumbOneJoint: 40000,
+      indexFingerThreeJoints: 40000,
+      indexFingerTwoJoints: 32000,
+      indexFingerOneJoint: 16000,
+      otherFingersTwoJoints: 20000,
+      bigToe: 20000,
+      otherFingersOneJoint: 4000,
+    },
+  },
+  {
+    id: 'plan-pa-150',
+    code: 'PA150',
+    name: 'แผน PA150',
+    category: 'pa',
+    badge: 'อุบัติเหตุ 150 บ./ด.',
+    badgeColor: 'bg-sky-100 text-sky-800 border-sky-300',
+    description: 'เบี้ย 150 บ./ด. ค่ารักษาอุบัติเหตุ 25,000 บ./ครั้ง คุ้มครองชีวิต/ทุพพลภาพถาวร 500,000 บ.',
+    monthlyPremium: 150,
+    annualPremium: 1800,
+    minAge: 6,
+    maxAge: 60,
+    ageRangeText: '6 - 60 ปี',
+    roomNormal: {
+      perNight: 0,
+      maxLimit: 0,
+      note: 'ไม่มีสิทธิ์ค่าห้อง (แผนอุบัติเหตุ PA)',
+    },
+    roomICU: {
+      perNight: 0,
+      maxLimit: 0,
+      note: 'ไม่มีสิทธิ์ค่าห้อง (แผนอุบัติเหตุ PA)',
+    },
+    medicalGeneralPerVisit: 0,
+    surgeryPerDisorder: 0,
+    doctorVisitPerNight: {
+      perNight: 0,
+      maxLimit: 0,
+    },
+    opd: {
+      accident: 25000,
+      illness: {
+        covered: false,
+        note: 'ไม่คุ้มครองโรคทั่วไป (คุ้มครองเฉพาะอุบัติเหตุ)',
+      },
+    },
+    dailyCompensation: {
+      perNight: 0,
+      maxLimit: 0,
+      note: 'ไม่มีค่าชดเชยรายวัน',
+    },
+    otherRightsNormalRoom: {
+      perNight: 0,
+      maxLimit: 0,
+    },
+    otherRightsICU: {
+      perNight: 0,
+      maxLimit: 0,
+    },
+    life: {
+      accidentGeneral: 500000,
+      murderAssault: 250000,
+      motorcycle: 250000,
+      funeralBenefit: 0,
+    },
+    paSchedule: {
+      permanentDisability: 500000,
+      twoLimbsOrEyes: 500000,
+      oneLimbOrEye: 300000,
+      deafBothOrMute: 250000,
+      thumbTwoJoints: 125000,
+      deafOneEar: 75000,
+      thumbOneJoint: 50000,
+      indexFingerThreeJoints: 50000,
+      indexFingerTwoJoints: 40000,
+      indexFingerOneJoint: 20000,
+      otherFingersTwoJoints: 25000,
+      bigToe: 25000,
+      otherFingersOneJoint: 5000,
     },
   },
 ];
@@ -294,49 +585,80 @@ export function analyzeDifferences(selectedPlans: InsurancePlan[]): DiffRowItem[
       category: 'ส่วนที่ 1: ค่าห้อง ค่าอาหาร และค่าบริการพยาบาล',
       title: '1.1 ค่าห้อง ค่าอาหาร ผู้ป่วยปกติ ต่อคืน',
       subTitle: 'สูงสุดไม่เกิน 45 คืนต่อครั้ง ต่อโรค',
-      getter: (p) => `${formatCurrency(p.roomNormal.perNight)} บ. (สูงสุด ${formatCurrency(p.roomNormal.maxLimit)} บ.)`,
+      getter: (p) =>
+        p.category === 'pa'
+          ? 'ไม่มีสิทธิ์ค่าห้อง'
+          : `${formatCurrency(p.roomNormal.perNight)} บ. (สูงสุด ${formatCurrency(p.roomNormal.maxLimit)} บ.)`,
     },
     {
       id: 'room-icu',
       category: 'ส่วนที่ 1: ค่าห้อง ค่าอาหาร และค่าบริการพยาบาล',
       title: '1.2 ค่าห้อง ค่าอาหาร ผู้ป่วยหนัก ICU ต่อคืน',
       subTitle: 'สูงสุดไม่เกิน 30 คืนต่อครั้ง ต่อโรค',
-      getter: (p) => `${formatCurrency(p.roomICU.perNight)} บ. (สูงสุด ${formatCurrency(p.roomICU.maxLimit)} บ.)`,
+      getter: (p) =>
+        p.category === 'pa'
+          ? 'ไม่มีสิทธิ์ค่าห้อง'
+          : `${formatCurrency(p.roomICU.perNight)} บ. (สูงสุด ${formatCurrency(p.roomICU.maxLimit)} บ.)`,
+    },
+    {
+      id: 'room-combined-max-limit',
+      category: 'ส่วนที่ 1: ค่าห้อง ค่าอาหาร และค่าบริการพยาบาล',
+      title: '1.3 รวมวงเงินค่าห้องปกติ + ICU สูงสุดต่อครั้ง',
+      subTitle: 'คำนวณจากห้องปกติ 45 คืน + ICU 30 คืน',
+      getter: (p) =>
+        p.category === 'pa'
+          ? 'ไม่มีสิทธิ์ค่าห้อง'
+          : `${formatCurrency(p.roomNormal.maxLimit + p.roomICU.maxLimit)} บาท`,
     },
     {
       id: 'med-general',
       category: 'ส่วนที่ 1: ค่าห้อง ค่าอาหาร และค่าบริการพยาบาล',
       title: '2.1 ค่ารักษาพยาบาล และค่าบริการทั่วไป ต่อครั้ง',
       subTitle: 'เบิกจ่ายตามจริงในวงเงิน',
-      getter: (p) => `${formatCurrency(p.medicalGeneralPerVisit)} บาท`,
+      getter: (p) =>
+        p.category === 'pa'
+          ? 'คุ้มครองเฉพาะอุบัติเหตุ'
+          : `${formatCurrency(p.medicalGeneralPerVisit)} บาท`,
     },
     {
       id: 'surgery',
       category: 'ส่วนที่ 1: ค่าห้อง ค่าอาหาร และค่าบริการพยาบาล',
       title: '2.2 การรักษาโดยการผ่าตัด ต่อโรค',
       subTitle: 'เบิกตามค่าใช้จ่ายจริง ไม่เกินวงเงิน',
-      getter: (p) => `${formatCurrency(p.surgeryPerDisorder)} บาท`,
+      getter: (p) =>
+        p.category === 'pa'
+          ? 'คุ้มครองเฉพาะอุบัติเหตุ'
+          : `${formatCurrency(p.surgeryPerDisorder)} บาท`,
     },
     {
       id: 'med-inpatient-subtotal',
       category: 'ส่วนที่ 1: ค่าห้อง ค่าอาหาร และค่าบริการพยาบาล',
       title: '2.4 รวมค่ารักษาพยาบาลผู้ป่วยใน (รักษาทั่วไป + ผ่าตัด)',
       subTitle: 'รวมวงเงินค่ารักษาและผ่าตัดต่อครั้ง',
-      getter: (p) => `${formatCurrency(p.medicalGeneralPerVisit + p.surgeryPerDisorder)} บาท`,
+      getter: (p) =>
+        p.category === 'pa'
+          ? 'คุ้มครองเฉพาะอุบัติเหตุ'
+          : `${formatCurrency(p.medicalGeneralPerVisit + p.surgeryPerDisorder)} บาท`,
     },
     {
       id: 'doctor-visit',
       category: 'ส่วนที่ 1: ค่าห้อง ค่าอาหาร และค่าบริการพยาบาล',
       title: '2.3 ค่าแพทย์ตรวจเยี่ยมไข้ ผู้ป่วยใน ต่อคืน',
       subTitle: 'สูงสุดไม่เกิน 45 คืน ต่อครั้ง ต่อโรค',
-      getter: (p) => `${formatCurrency(p.doctorVisitPerNight.perNight)} บ. (สูงสุด ${formatCurrency(p.doctorVisitPerNight.maxLimit)} บ.)`,
+      getter: (p) =>
+        p.category === 'pa'
+          ? 'คุ้มครองเฉพาะอุบัติเหตุ'
+          : `${formatCurrency(p.doctorVisitPerNight.perNight)} บ. (สูงสุด ${formatCurrency(p.doctorVisitPerNight.maxLimit)} บ.)`,
     },
     {
       id: 'med-inpatient-max-limit',
       category: 'ส่วนที่ 1: ค่าห้อง ค่าอาหาร และค่าบริการพยาบาล',
       title: '2.5 รวมผลประโยชน์ค่ารักษาพยาบาลผู้ป่วยในสูงสุด ต่อการรักษาครั้งหนึ่ง',
       subTitle: 'ค่าห้องปกติ 45 คืน + ค่ารักษาทั่วไป + ผ่าตัด + ค่าแพทย์ 45 คืน',
-      getter: (p) => `${formatCurrency(p.roomNormal.maxLimit + p.medicalGeneralPerVisit + p.surgeryPerDisorder + p.doctorVisitPerNight.maxLimit)} บาท`,
+      getter: (p) =>
+        p.category === 'pa'
+          ? 'คุ้มครองเฉพาะอุบัติเหตุ'
+          : `${formatCurrency(p.roomNormal.maxLimit + p.medicalGeneralPerVisit + p.surgeryPerDisorder + p.doctorVisitPerNight.maxLimit)} บาท`,
     },
     {
       id: 'opd-accident',
@@ -344,15 +666,19 @@ export function analyzeDifferences(selectedPlans: InsurancePlan[]): DiffRowItem[
       title: '3.1 OPD กรณีอุบัติเหตุ ต่อครั้ง',
       subTitle: 'ไม่จำกัดจำนวนครั้ง',
       getter: (p) => `${formatCurrency(p.opd.accident)} บาท`,
+      highlightNote: 'แผน PA คุ้มครองค่ารักษาอุบัติเหตุสูง 10,000 - 25,000 บ./ครั้ง',
     },
     {
       id: 'opd-illness',
       category: 'ส่วนที่ 1: ค่าห้อง ค่าอาหาร และค่าบริการพยาบาล',
       title: '3.2 OPD กรณีโรคภัยไข้เจ็บ ต่อครั้ง',
       subTitle: 'พบแพทย์ผู้ป่วยนอก ไม่ต้องนอนโรงพยาบาล',
-      getter: (p) => p.opd.illness.covered 
-        ? `${formatCurrency(p.opd.illness.perVisit || 0)} บ. (${p.opd.illness.maxVisitsPerYear} ครั้ง/ปี)`
-        : 'ไม่คุ้มครอง',
+      getter: (p) =>
+        p.category === 'pa'
+          ? 'ไม่คุ้มครองโรคทั่วไป'
+          : p.opd.illness.covered
+          ? `${formatCurrency(p.opd.illness.perVisit || 0)} บ. (${p.opd.illness.maxVisitsPerYear} ครั้ง/ปี)`
+          : 'ไม่คุ้มครอง',
       highlightNote: 'แผน 15-O และ 610-O มีความคุ้มครอง OPD โรคทั่วไป 500 บ./ครั้ง (9 ครั้ง/ปี)',
     },
     {
@@ -360,7 +686,10 @@ export function analyzeDifferences(selectedPlans: InsurancePlan[]): DiffRowItem[
       category: 'ส่วนที่ 1: ค่าห้อง ค่าอาหาร และค่าบริการพยาบาล',
       title: '3.3 รวมค่ารักษาพยาบาลผู้ป่วยนอก (OPD) สูงสุดต่อครั้ง',
       subTitle: 'รวมอุบัติเหตุฉุกเฉิน และ OPD โรคทั่วไป',
-      getter: (p) => `${formatCurrency(p.opd.accident + (p.opd.illness.covered ? (p.opd.illness.perVisit || 0) : 0))} บาท`,
+      getter: (p) =>
+        `${formatCurrency(
+          p.opd.accident + (p.opd.illness.covered ? p.opd.illness.perVisit || 0 : 0)
+        )} บาท`,
     },
     // ส่วนที่ 2: ค่าชดเชย
     {
@@ -368,7 +697,10 @@ export function analyzeDifferences(selectedPlans: InsurancePlan[]): DiffRowItem[
       category: 'ส่วนที่ 2: สิทธิพิเศษเพิ่มเติม / ค่าชดเชยรายวัน',
       title: '1. ค่าชดเชยการนอนโรงพยาบาล ผู้ป่วยใน ต่อคืน',
       subTitle: 'สูงสุด ต่อครั้ง ต่อโรค',
-      getter: (p) => `${formatCurrency(p.dailyCompensation.perNight)} บ./คืน (สูงสุด ${formatCurrency(p.dailyCompensation.maxLimit)} บ.)`,
+      getter: (p) =>
+        p.category === 'pa'
+          ? 'ไม่มีเงินชดเชย'
+          : `${formatCurrency(p.dailyCompensation.perNight)} บ./คืน (สูงสุด ${formatCurrency(p.dailyCompensation.maxLimit)} บ.)`,
       highlightNote: 'แผน 610-O ชดเชยสูง 1,200 บ./คืน (สูงสุด 54,000 บ.) ขณะที่แผนอื่นได้ 300 บ./คืน',
     },
     {
@@ -376,7 +708,10 @@ export function analyzeDifferences(selectedPlans: InsurancePlan[]): DiffRowItem[
       category: 'ส่วนที่ 2: สิทธิพิเศษเพิ่มเติม / ค่าชดเชยรายวัน',
       title: '2.1 ชดเชยกรณีใช้สิทธิ์อื่น (ห้องปกติ ต่อคืน)',
       subTitle: 'เบิกจ่ายจากสิทธิ์ราชการ, ประกันสังคม ฯลฯ ไม่ใช้ส่วนที่ 1',
-      getter: (p) => `${formatCurrency(p.otherRightsNormalRoom.perNight)} บ./คืน (สูงสุด ${formatCurrency(p.otherRightsNormalRoom.maxLimit)} บ.)`,
+      getter: (p) =>
+        p.category === 'pa'
+          ? 'ไม่มีเงินชดเชย'
+          : `${formatCurrency(p.otherRightsNormalRoom.perNight)} บ./คืน (สูงสุด ${formatCurrency(p.otherRightsNormalRoom.maxLimit)} บ.)`,
       highlightNote: 'แผน 610-O ชดเชยสูง 3,000 บ./คืน (สูงสุด 90,000 บ.) สูงกว่าแผนอื่น',
     },
     {
@@ -384,7 +719,10 @@ export function analyzeDifferences(selectedPlans: InsurancePlan[]): DiffRowItem[
       category: 'ส่วนที่ 2: สิทธิพิเศษเพิ่มเติม / ค่าชดเชยรายวัน',
       title: '2.2 ชดเชยกรณีใช้สิทธิ์อื่น (ห้อง ICU ต่อคืน)',
       subTitle: 'สูงสุด ต่อครั้ง ต่อโรค',
-      getter: (p) => `${formatCurrency(p.otherRightsICU.perNight)} บ./คืน (สูงสุด ${formatCurrency(p.otherRightsICU.maxLimit)} บ.)`,
+      getter: (p) =>
+        p.category === 'pa'
+          ? 'ไม่มีเงินชดเชย'
+          : `${formatCurrency(p.otherRightsICU.perNight)} บ./คืน (สูงสุด ${formatCurrency(p.otherRightsICU.maxLimit)} บ.)`,
     },
     // ส่วนที่ 3: เสียชีวิต
     {
@@ -393,7 +731,7 @@ export function analyzeDifferences(selectedPlans: InsurancePlan[]): DiffRowItem[
       title: '1. เสียชีวิต/ทุพพลภาพ จากอุบัติเหตุทั่วไป (อบ.2)',
       subTitle: 'คุ้มครองการเสียชีวิต สูญเสียอวัยวะ สายตา หรือทุพพลภาพ',
       getter: (p) => `${formatCurrency(p.life.accidentGeneral)} บาท`,
-      highlightNote: 'แผน 15-I, 15-O, 610-I คุ้มครอง 200,000 บ. ส่วน 610-O คุ้มครอง 3,000 บ.',
+      highlightNote: 'แผน PA ให้ทุนคุ้มครองอุบัติเหตุสูงถึง 200,000 - 500,000 บาท',
     },
     {
       id: 'life-murder',
@@ -414,8 +752,47 @@ export function analyzeDifferences(selectedPlans: InsurancePlan[]): DiffRowItem[
       category: 'ส่วนที่ 3: ความคุ้มครองการเสียชีวิต',
       title: '4. ผลประโยชน์ค่าปลงศพ กรณีเสียชีวิตจากการเจ็บป่วย',
       subTitle: 'ระยะเวลารอคอย 180 วัน',
-      getter: (p) => `${formatCurrency(p.life.funeralBenefit)} บาท`,
-      highlightNote: 'แผน 15-I, 15-O, 610-I มีค่าปลงศพ 20,000 บ. ขณะที่ 610-O ได้ 3,000 บ.',
+      getter: (p) =>
+        p.category === 'pa' ? 'ไม่มีค่าปลงศพ' : `${formatCurrency(p.life.funeralBenefit)} บาท`,
+      highlightNote: 'แผนสุขภาพ 15-I, 15-O, 610-I มีค่าปลงศพ 20,000 บ. ส่วนแผน PA เน้นคุ้มครองอุบัติเหตุ',
+    },
+    // ส่วนที่ 4: ตารางผลประโยชน์อุบัติเหตุ อบ.2
+    {
+      id: 'pa-permanent-disability',
+      category: 'ส่วนที่ 4: ตารางผลประโยชน์ความคุ้มครองอุบัติเหตุ อบ.2',
+      title: '1. กรณีทุพพลภาพโดยถาวร (100%)',
+      subTitle: 'ทุพพลภาพถาวรสิ้นเชิงจากอุบัติเหตุ',
+      getter: (p) =>
+        `${formatCurrency(
+          p.paSchedule?.permanentDisability ?? p.life.accidentGeneral
+        )} บาท`,
+    },
+    {
+      id: 'pa-two-limbs',
+      category: 'ส่วนที่ 4: ตารางผลประโยชน์ความคุ้มครองอุบัติเหตุ อบ.2',
+      title: '2. สูญเสียอวัยวะ 2 ข้างขึ้นไป (100%)',
+      subTitle: 'มือ เท้า สายตา 2 ข้างขึ้นไป',
+      getter: (p) =>
+        `${formatCurrency(
+          p.paSchedule?.twoLimbsOrEyes ?? p.life.accidentGeneral
+        )} บาท`,
+    },
+    {
+      id: 'pa-one-limb',
+      category: 'ส่วนที่ 4: ตารางผลประโยชน์ความคุ้มครองอุบัติเหตุ อบ.2',
+      title: '3. สูญเสียอวัยวะ 1 ข้าง (60%)',
+      subTitle: 'มือ เท้า หรือสายตา 1 ข้าง',
+      getter: (p) =>
+        `${formatCurrency(
+          p.paSchedule?.oneLimbOrEye ?? Math.round(p.life.accidentGeneral * 0.6)
+        )} บาท`,
+    },
+    {
+      id: 'pa-accident-treatment',
+      category: 'ส่วนที่ 4: ตารางผลประโยชน์ความคุ้มครองอุบัติเหตุ อบ.2',
+      title: '4. ค่ารักษาพยาบาลต่ออุบัติเหตุแต่ละครั้ง',
+      subTitle: 'ใช้ใบเสร็จตัวจริง + ใบรับรองแพทย์ ไม่จำกัดจำนวนครั้ง',
+      getter: (p) => `${formatCurrency(p.opd.accident)} บาท`,
     },
   ];
 

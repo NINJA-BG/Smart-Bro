@@ -214,6 +214,45 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </div>
           </div>
 
+          {/* Coordinator Section */}
+          <div className="bg-indigo-50/70 p-3.5 rounded-xl border border-indigo-200/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-slate-900 font-bold text-xs flex items-center gap-1.5">
+                <User className="w-4 h-4 text-indigo-700" />
+                ผู้ประสานงานโครงการ (สำหรับระบุในเงื่อนไขการใช้สิทธิ์)
+              </label>
+              <span className="text-[10px] text-indigo-700 bg-white px-2 py-0.5 rounded border border-indigo-200 font-medium">
+                สยามสไมล์
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div>
+                <input
+                  type="text"
+                  placeholder="ชื่อ-นามสกุล ผู้ประสานงานโครงการ"
+                  value={exportMeta.coordinatorName || ''}
+                  onChange={(e) => onUpdateMeta({ ...exportMeta, coordinatorName: e.target.value })}
+                  className="w-full px-3 py-1.5 bg-white rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 text-xs"
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="เบอร์โทรศัพท์ผู้ประสานงาน"
+                  value={exportMeta.coordinatorPhone || ''}
+                  onChange={(e) => onUpdateMeta({ ...exportMeta, coordinatorPhone: e.target.value })}
+                  className="w-full px-3 py-1.5 bg-white rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 text-xs"
+                />
+              </div>
+            </div>
+            <div className="text-[10px] text-indigo-900 bg-indigo-100/60 p-2 rounded-lg flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5 text-indigo-700 shrink-0" />
+              <span>
+                เอกสารที่ส่งออกจะแนบ <strong>&quot;เงื่อนไขและข้อยกเว้น ในการใช้สิทธิ์&quot;</strong> ครบ 7 ข้อ พร้อม QR Code และเบอร์ติดต่อ 1434 ทุกครั้ง
+              </span>
+            </div>
+          </div>
+
           {/* Date and Notes */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
             <div className="sm:col-span-1">

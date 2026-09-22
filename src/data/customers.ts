@@ -18,6 +18,22 @@ export const MOCK_EXISTING_CUSTOMERS: CustomerProfile[] = [
     lossClaimStatus: '15% (ประวัติดี)',
     lineOaRegistered: true,
     lineOaStatusText: 'ลงทะเบียนแล้ว',
+    policies: [
+      {
+        policyNumber: 'POL-2022-8910',
+        planId: 'plan-15-i',
+        startDate: '15 มิ.ย. 2565',
+        lossClaimRate: 15,
+        lossClaimStatus: '15% (ประวัติดี)',
+      },
+      {
+        policyNumber: 'POL-PA-2023-4011',
+        planId: 'plan-pa-60',
+        startDate: '10 ม.ค. 2566',
+        lossClaimRate: 0,
+        lossClaimStatus: '0% (ไม่มีประวัติเคลม)',
+      },
+    ],
   },
   {
     idCard: '3200109876543',
@@ -162,4 +178,77 @@ export function searchExistingCustomer(query: string): CustomerProfile | null {
       return cleanId.includes(searchTarget) || cleanName.includes(searchTarget) || c.fullName.includes(query.trim());
     }) || null
   );
+}
+
+const THAI_MONTH_MAP: { [key: string]: number } = {
+  'ม.ค.': 0, 'ก.พ.': 1, 'มี.ค.': 2, 'เม.ย.': 3, 'พ.ค.': 4, 'มิ.ย.': 5,
+  'ก.ค.': 6, 'ส.ค.': 7, 'ก.ย.': 8, 'ต.ค.': 9, 'พ.ย.': 10, 'ธ.ค.': 11,
+  'มกราคม': 0, 'กุมภาพันธ์': 1, 'มีนาคม': 2, 'เมษายน': 3, 'พฤษภาคม': 4, 'มิถุนายน': 5,
+  'กรกฎาคม': 6, 'สิงหาคม': 7, 'กันยายน': 8, 'ตุลาคม': 9, 'พฤศจิกายน': 10, 'ธันวาคม': 11,
+};
+
+/**
+ * Calculate policy duration in years, months, and days from start date
+ */
+export function calculatePolicyDuration(startDateStr: string): {
+  years: number;
+  months: number;
+  days: number;
+  displayText: string;
+} {
+  if (!startDateStr) {
+    return { years: 0, months: 0, days: 0, displayText: '-' };
+  }
+
+  let startDate: Date | null = null;
+  const thaiMatch = startDateStr.trim().match(/^(\d{1,2})\s+([^\s]+)\s+(\d{4})$/);
+  if (thaiMatch) {
+    const day = parseInt(thaiMatch[1], 10);
+    const monthKey = thaiMatch[2];
+    let year = parseInt(thaiMatch[3], 10);
+    if (year > 2400) year -= 543;
+    const month = THAI_MONTH_MAP[monthKey] ?? 0;
+    startDate = new Date(year, month, day);
+  } else {
+    const parsed = new Date(startDateStr);
+    if (!isNaN(parsed.getTime())) {
+      startDate = parsed;
+    }
+  }
+
+  if (!startDate || isNaN(startDate.getTime())) {
+    return { years: 0, months: 0, days: 0, displayText: startDateStr };
+  }
+
+  const today = new Date();
+  let years = today.getFullYear() - startDate.getFullYear();
+  let months = today.getMonth() - startDate.getMonth();
+  let days = today.getDate() - startDate.getDate();
+
+  if (days < 0) {
+    months--;
+    const prevMonthLastDay = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+    days += prevMonthLastDay;
+  }
+
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+
+  years = Math.max(0, years);
+  months = Math.max(0, months);
+  days = Math.max(0, days);
+
+  const parts: string[] = [];
+  if (years > 0) parts.push(`${years} ปี`);
+  if (months > 0) parts.push(`${months} เดือน`);
+  if (days > 0 || (years === 0 && months === 0)) parts.push(`${days} วัน`);
+
+  return {
+    years,
+    months,
+    days,
+    displayText: parts.join(' '),
+  };
 }

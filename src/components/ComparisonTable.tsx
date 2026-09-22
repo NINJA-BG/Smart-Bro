@@ -1,5 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { InsurancePlan, ViewFilterMode, ExportMeta, CustomerProfile } from '../types';
+import {
+  InsurancePlan,
+  ViewFilterMode,
+  ExportMeta,
+  CustomerProfile,
+  PaDismembermentSchedule,
+} from '../types';
 import { formatCurrency, analyzeDifferences } from '../data/plans';
 import { MOCK_EXISTING_CUSTOMERS } from '../data/customers';
 import {
@@ -19,7 +25,11 @@ import {
   Stethoscope,
   Activity,
   Plus,
+  ShieldAlert,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
+import { PolicyTermsNotice } from './PolicyTermsNotice';
 
 interface ComparisonTableProps {
   selectedPlans: InsurancePlan[];
@@ -51,6 +61,19 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
   onTogglePlan,
 }) => {
   const [showCombinedColumn, setShowCombinedColumn] = useState<boolean>(true);
+  const [showPaDetails, setShowPaDetails] = useState<boolean>(true);
+
+  // Helper to get dismemberment amount for a plan
+  const getPlanPaValue = (
+    plan: InsurancePlan,
+    key: keyof PaDismembermentSchedule,
+    ratio: number
+  ): number => {
+    if (plan.paSchedule && plan.paSchedule[key] !== undefined) {
+      return plan.paSchedule[key];
+    }
+    return Math.round(plan.life.accidentGeneral * ratio);
+  };
 
   // Identify existing plan if customer is active
   const existingCustomerPlan = useMemo(() => {
@@ -183,6 +206,65 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
     const lifeMotorcycle = plansForCombined.reduce((sum, p) => sum + p.life.motorcycle, 0);
     const lifeFuneral = plansForCombined.reduce((sum, p) => sum + p.life.funeralBenefit, 0);
 
+    // 6. PA Dismemberment Schedule Breakdown
+    const paPermanentDisability = plansForCombined.reduce(
+      (sum, p) => sum + (p.paSchedule?.permanentDisability ?? p.life.accidentGeneral),
+      0
+    );
+    const paTwoLimbsOrEyes = plansForCombined.reduce(
+      (sum, p) => sum + (p.paSchedule?.twoLimbsOrEyes ?? p.life.accidentGeneral),
+      0
+    );
+    const paOneLimbOrEye = plansForCombined.reduce(
+      (sum, p) => sum + (p.paSchedule?.oneLimbOrEye ?? Math.round(p.life.accidentGeneral * 0.6)),
+      0
+    );
+    const paDeafBothOrMute = plansForCombined.reduce(
+      (sum, p) => sum + (p.paSchedule?.deafBothOrMute ?? Math.round(p.life.accidentGeneral * 0.5)),
+      0
+    );
+    const paThumbTwoJoints = plansForCombined.reduce(
+      (sum, p) => sum + (p.paSchedule?.thumbTwoJoints ?? Math.round(p.life.accidentGeneral * 0.25)),
+      0
+    );
+    const paDeafOneEar = plansForCombined.reduce(
+      (sum, p) => sum + (p.paSchedule?.deafOneEar ?? Math.round(p.life.accidentGeneral * 0.15)),
+      0
+    );
+    const paThumbOneJoint = plansForCombined.reduce(
+      (sum, p) => sum + (p.paSchedule?.thumbOneJoint ?? Math.round(p.life.accidentGeneral * 0.1)),
+      0
+    );
+    const paIndexFingerThreeJoints = plansForCombined.reduce(
+      (sum, p) =>
+        sum + (p.paSchedule?.indexFingerThreeJoints ?? Math.round(p.life.accidentGeneral * 0.1)),
+      0
+    );
+    const paIndexFingerTwoJoints = plansForCombined.reduce(
+      (sum, p) =>
+        sum + (p.paSchedule?.indexFingerTwoJoints ?? Math.round(p.life.accidentGeneral * 0.08)),
+      0
+    );
+    const paIndexFingerOneJoint = plansForCombined.reduce(
+      (sum, p) =>
+        sum + (p.paSchedule?.indexFingerOneJoint ?? Math.round(p.life.accidentGeneral * 0.04)),
+      0
+    );
+    const paOtherFingersTwoJoints = plansForCombined.reduce(
+      (sum, p) =>
+        sum + (p.paSchedule?.otherFingersTwoJoints ?? Math.round(p.life.accidentGeneral * 0.05)),
+      0
+    );
+    const paBigToe = plansForCombined.reduce(
+      (sum, p) => sum + (p.paSchedule?.bigToe ?? Math.round(p.life.accidentGeneral * 0.05)),
+      0
+    );
+    const paOtherFingersOneJoint = plansForCombined.reduce(
+      (sum, p) =>
+        sum + (p.paSchedule?.otherFingersOneJoint ?? Math.round(p.life.accidentGeneral * 0.01)),
+      0
+    );
+
     // Age bounds
     const minEligibleAge = Math.max(...plansForCombined.map((p) => p.minAge));
     const maxEligibleAge = Math.min(...plansForCombined.map((p) => p.maxAge));
@@ -228,6 +310,19 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
       lifeMurder,
       lifeMotorcycle,
       lifeFuneral,
+      paPermanentDisability,
+      paTwoLimbsOrEyes,
+      paOneLimbOrEye,
+      paDeafBothOrMute,
+      paThumbTwoJoints,
+      paDeafOneEar,
+      paThumbOneJoint,
+      paIndexFingerThreeJoints,
+      paIndexFingerTwoJoints,
+      paIndexFingerOneJoint,
+      paOtherFingersTwoJoints,
+      paBigToe,
+      paOtherFingersOneJoint,
       minEligibleAge,
       maxEligibleAge,
     };
@@ -237,9 +332,11 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
     return (
       <div className="bg-white rounded-2xl shadow-xs border border-slate-200 p-8 sm:p-12 text-center text-slate-500">
         <ShieldCheck className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-        <h3 className="text-base font-bold text-slate-700">ยังไม่ได้เลือกแผนเปรียบเทียบ</h3>
+        <h3 className="text-base font-bold text-slate-700">ยังไม่ได้เลือกแผนที่จะเปรียบเทียบ</h3>
         <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          กรุณาเลือกแผนประกันอย่างน้อย 1 แผนจากด้านบนเพื่อแสดงตารางเปรียบเทียบ
+          {existingCustomer
+            ? `กรุณาคลิกเลือกแผนใหม่จากรายการด้านบน เพื่อเปรียบเทียบผลประโยชน์และดูวงเงิน Top-up เพิ่มเติมจากแผนเดิม (${existingCustomerPlan?.name || ''})`
+            : 'กรุณาคลิกเลือกแผนประกันภัยอย่างน้อย 1 แผนจากด้านบนเพื่อแสดงตารางเปรียบเทียบ'}
         </p>
       </div>
     );
@@ -263,76 +360,6 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
       id="comparison-report-element"
       className="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden"
     >
-      {/* Optional Metadata Header for PDF/Print view */}
-      {exportMeta && (
-        <div className="bg-gradient-to-r from-sky-950 via-slate-900 to-blue-950 text-white p-4 sm:p-5 border-b border-sky-800">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-lg md:text-xl font-black tracking-tight">
-                  เอกสารเปรียบเทียบความคุ้มครองแผนประกันภัย
-                </span>
-                <span className="text-[11px] bg-sky-500/30 text-sky-200 px-2 py-0.5 rounded-full border border-sky-400/30">
-                  {selectedPlans.length} แผน
-                  {isCombinedVisible && ' + รวมวงเงินและเบี้ย'}
-                </span>
-              </div>
-              <p className="text-xs text-sky-200/80 mt-0.5">
-                สรุปความคุ้มครอง สิทธิประโยชน์ และคำนวณยอดเบี้ยประกันภัยรายบุคคล
-              </p>
-            </div>
-
-            <div className="text-xs text-sky-100/90 space-y-1 sm:text-right bg-sky-950/40 p-2.5 rounded-lg border border-sky-800/50">
-              <div>
-                <span className="text-sky-300">เสนอ: </span>
-                <span className="font-semibold text-white">
-                  {exportMeta.customerName || 'ลูกค้าทั่วไป (ไม่ระบุชื่อ)'}
-                </span>
-              </div>
-              {existingCustomer && (
-                <div className="text-[11px] text-sky-200">
-                  <span>Loss: </span>
-                  <strong className="text-white">{existingCustomer.lossClaimStatus}</strong>
-                  <span className="mx-1">•</span>
-                  <span>LINE OA: </span>
-                  <strong className="text-white">{existingCustomer.lineOaStatusText}</strong>
-                </div>
-              )}
-              {(exportMeta.agentFirstName || exportMeta.agentLastName) && (
-                <div>
-                  <span className="text-sky-300">ผู้แทน: </span>
-                  <span className="text-white font-medium">
-                    {exportMeta.agentFirstName} {exportMeta.agentLastName}
-                  </span>
-                  {exportMeta.agentOfficeCode && (
-                    <span className="text-sky-200 text-[11px] ml-1">
-                      (สนง. {exportMeta.agentOfficeCode})
-                    </span>
-                  )}
-                </div>
-              )}
-              {exportMeta.agentPhone && (
-                <div>
-                  <span className="text-sky-300">โทร: </span>
-                  <span className="text-white">{exportMeta.agentPhone}</span>
-                </div>
-              )}
-              <div>
-                <span className="text-sky-300">วันที่: </span>
-                {exportMeta.date || new Date().toLocaleDateString('th-TH')}
-              </div>
-            </div>
-          </div>
-
-          {exportMeta.notes && (
-            <div className="mt-2.5 text-xs bg-white/10 rounded-md p-2 text-sky-100 border border-white/10">
-              <span className="font-semibold text-sky-200">หมายเหตุ: </span>
-              {exportMeta.notes}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* iPad-Optimized Integrated Function Toolbar */}
       {!printMode && (
         <div className="no-print p-3 sm:p-4 bg-slate-50/90 border-b border-slate-200 space-y-2.5">
@@ -418,178 +445,6 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
               </span>
             </div>
           </div>
-
-          {/* Dedicated Existing Customer Medical & Top-up Card */}
-          {existingCustomer && combinedTotals && (
-            <div className="p-3.5 sm:p-4 rounded-xl bg-gradient-to-r from-[#f0f7fd] via-[#e8f3fc] to-white border-2 border-[#b9ddf8] shadow-xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-sky-200/80">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#00509d] text-white flex items-center justify-center shrink-0 shadow-2xs">
-                    <HeartPulse className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-extrabold text-slate-900 text-sm md:text-base">
-                        ช่องรวมค่ารักษาพยาบาลกรณีลูกค้าเดิม
-                      </span>
-                      <span className="text-[10px] font-bold bg-sky-100 text-[#00509d] border border-sky-200 px-2 py-0.5 rounded-full">
-                        Top-up เพิ่มความคุ้มครอง
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-600 mt-0.5">
-                      ลูกค้า: <strong className="text-slate-800">คุณ{existingCustomer.fullName}</strong> • กรมธรรม์: {existingCustomer.policyNumber} • แผนเดิม: <strong className="text-[#00509d]">{existingCustomerPlan?.name || 'แผนเดิม'}</strong> (เบี้ย ฿{formatCurrency(combinedTotals.existingMonthly)}/ด.)
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 flex-wrap">
-                  {!isExistingPlanSelected && existingCustomerPlan && onTogglePlan && (
-                    <button
-                      type="button"
-                      onClick={() => onTogglePlan(existingCustomerPlan.id)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#00509d] hover:bg-[#094f92] text-white text-xs font-bold shadow-2xs transition-colors cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>แสดงแผนเดิม ({existingCustomerPlan.code}) ในตาราง</span>
-                    </button>
-                  )}
-                  {onSelectExistingCustomer && (
-                    <button
-                      type="button"
-                      onClick={() => onSelectExistingCustomer(null)}
-                      className="text-slate-500 hover:text-slate-800 text-[11px] underline cursor-pointer"
-                    >
-                      เปลี่ยนลูกค้า
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Medical Totals Breakdown Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 text-xs">
-                <div className="bg-white p-2.5 rounded-lg border border-sky-200 shadow-2xs">
-                  <span className="text-slate-500 block text-[10px] font-medium">รวมค่ารักษาพยาบาลผู้ป่วยใน:</span>
-                  <div className="font-black text-[#00509d] text-sm sm:text-base">
-                    ฿{formatCurrency(combinedTotals.inpatientMedicalSubtotal)}
-                  </div>
-                  <span className="text-[10px] text-slate-500">
-                    (ทั่วไป ฿{formatCurrency(combinedTotals.medicalGeneral)} + ผ่าตัด ฿{formatCurrency(combinedTotals.surgery)})
-                  </span>
-                </div>
-
-                <div className="bg-white p-2.5 rounded-lg border border-sky-200 shadow-2xs">
-                  <span className="text-slate-500 block text-[10px] font-medium">รวมค่าห้องปกติ / ICU:</span>
-                  <div className="font-black text-[#00509d] text-sm sm:text-base">
-                    ฿{formatCurrency(combinedTotals.roomNormalPerNight)} <span className="text-[11px] font-normal text-slate-600">/คืน</span>
-                  </div>
-                  <span className="text-[10px] text-sky-700 font-semibold">
-                    ICU ฿{formatCurrency(combinedTotals.roomICUPerNight)} / สูงสุด ฿{formatCurrency(combinedTotals.roomCombinedMaxLimit)}
-                  </span>
-                </div>
-
-                <div className="bg-white p-2.5 rounded-lg border border-sky-200 shadow-2xs">
-                  <span className="text-slate-500 block text-[10px] font-medium">รวมค่าแพทย์ + OPD ต่อครั้ง:</span>
-                  <div className="font-black text-[#00509d] text-sm sm:text-base">
-                    ฿{formatCurrency(combinedTotals.doctorVisitPerNight)} <span className="text-[11px] font-normal text-slate-600">/คืน</span>
-                  </div>
-                  <span className="text-[10px] text-slate-600">
-                    OPD อุบัติเหตุ ฿{formatCurrency(combinedTotals.opdAccident)} {combinedTotals.hasOpdIllness ? `• OPD ทั่วไป ฿${formatCurrency(combinedTotals.opdIllnessPerVisit)}` : ''}
-                  </span>
-                </div>
-
-                <div className="bg-gradient-to-br from-[#094f92] to-[#00509d] text-white p-2.5 rounded-lg shadow-2xs">
-                  <span className="text-sky-100 block text-[10px] font-semibold">เบี้ยรวมทั้งสิ้น (แผนเดิม+ใหม่):</span>
-                  <div className="font-black text-white text-base sm:text-lg">
-                    ฿{formatCurrency(combinedTotals.monthlyPremium)} <span className="text-xs font-normal text-sky-200">/ด.</span>
-                  </div>
-                  <span className="text-[10px] text-sky-100 font-bold block">
-                    {combinedTotals.addedMonthly > 0 ? `ลูกค้าเดิมจ่ายเพิ่ม +฿${formatCurrency(combinedTotals.addedMonthly)}/ด.` : 'รวมเบี้ยตามแผน'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Quick Existing Customer Selector when no customer is selected */}
-          {!existingCustomer && onSelectExistingCustomer && (
-            <div className="p-2.5 sm:p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs flex flex-col md:flex-row md:items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 text-slate-700">
-                <UserCheck className="w-4 h-4 text-blue-600 shrink-0" />
-                <span className="font-semibold text-slate-800">
-                  ช่องรวมค่ารักษาพยาบาลกรณีลูกค้าเดิม:
-                </span>
-                <span className="text-slate-500 hidden sm:inline">
-                  คลิกเลือกลูกค้าเดิมเพื่อดึงแผนเดิมมาคำนวณ Top-up รวมทันที
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {MOCK_EXISTING_CUSTOMERS.map((cust) => (
-                  <button
-                    key={cust.idCard}
-                    type="button"
-                    onClick={() => onSelectExistingCustomer(cust)}
-                    className="px-2 py-1 rounded-md bg-white border border-slate-300 hover:border-blue-400 hover:bg-blue-50 text-[11px] font-medium text-slate-700 shadow-2xs transition-colors cursor-pointer"
-                  >
-                    คุณ{cust.fullName.split(' ')[0]} ({cust.existingPlanId.replace('plan-', '').toUpperCase()})
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Standard Combined Insights Strip (When NOT existing customer & multiple plans selected) */}
-          {!existingCustomer && isCombinedVisible && combinedTotals && (
-            <div className="p-2.5 rounded-xl bg-gradient-to-r from-sky-50/80 via-blue-50/60 to-white border border-sky-200 text-xs flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#00509d] text-white font-bold text-[11px]">
-                  <Check className="w-3 h-3" /> รวม {selectedPlans.length} แผน
-                </span>
-                <span className="text-slate-600 text-[11px]">
-                  ({selectedPlans.map((p) => p.code).join(' + ')})
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="text-slate-700">
-                  ค่าห้องปกติรวม:{' '}
-                  <strong className="text-slate-900 font-bold">
-                    ฿{formatCurrency(combinedTotals.roomNormalPerNight)}
-                  </strong>
-                  /คืน
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="text-slate-700">
-                  ค่ารักษาทั่วไปรวม:{' '}
-                  <strong className="text-slate-900 font-bold">
-                    ฿{formatCurrency(combinedTotals.medicalGeneral)}
-                  </strong>
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="text-slate-700">
-                  ผ่าตัดรวม:{' '}
-                  <strong className="text-slate-900 font-bold">
-                    ฿{formatCurrency(combinedTotals.surgery)}
-                  </strong>
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="text-slate-700">
-                  ชดเชยรายวันรวม:{' '}
-                  <strong className="text-slate-900 font-bold">
-                    ฿{formatCurrency(combinedTotals.dailyCompPerNight)}
-                  </strong>
-                  /คืน
-                </span>
-              </div>
-
-              <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-sky-200 shrink-0">
-                <span className="text-slate-500 text-[11px]">เบี้ยรวม:</span>
-                <span className="font-extrabold text-[#00509d] text-sm">
-                  ฿{formatCurrency(combinedTotals.monthlyPremium)}
-                </span>
-                <span className="text-slate-500 text-[10px]">
-                  /ด. (฿{formatCurrency(combinedTotals.annualPremium)}/ปี)
-                </span>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
@@ -624,6 +479,15 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
                       {isExistingCustomerPlan && (
                         <span className="inline-block bg-emerald-500 text-white font-black text-[9px] uppercase px-1.5 py-0.2 rounded-full shadow-2xs">
                           แผนเดิมของลูกค้า
+                        </span>
+                      )}
+                      {plan.category === 'pa' ? (
+                        <span className="inline-block bg-amber-400 text-amber-950 font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-2xs">
+                          แผนอุบัติเหตุ PA
+                        </span>
+                      ) : (
+                        <span className="inline-block bg-sky-950/40 text-sky-200 font-medium text-[9px] uppercase px-1.5 py-0.2 rounded-full">
+                          แผนประกันสุขภาพ
                         </span>
                       )}
                       <div className="inline-block bg-white/20 backdrop-blur-xs text-white px-2.5 py-0.5 rounded-md text-sm md:text-base font-black tracking-wide border border-sky-300/30">
@@ -1506,9 +1370,16 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
                     key={plan.id}
                     className="py-2 px-3 sm:px-4 text-center border-r border-slate-100"
                   >
-                    <div className="font-bold text-slate-900 text-xs sm:text-sm md:text-base">
-                      {formatCurrency(plan.life.funeralBenefit)}
-                    </div>
+                    {plan.category === 'pa' ? (
+                      <div>
+                        <div className="text-slate-400 font-medium text-xs">-</div>
+                        <div className="text-[10px] text-slate-400">ไม่มีค่าปลงศพ</div>
+                      </div>
+                    ) : (
+                      <div className="font-bold text-slate-900 text-xs sm:text-sm md:text-base">
+                        {formatCurrency(plan.life.funeralBenefit)}
+                      </div>
+                    )}
                   </td>
                 ))}
                 {isCombinedVisible && combinedTotals && (
@@ -1519,6 +1390,531 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
                   </td>
                 )}
               </tr>
+            )}
+
+            {/* ============================================================== */}
+            {/* SECTION 4: รายละเอียดตารางความคุ้มครองอุบัติเหตุ อบ.2            */}
+            {/* ============================================================== */}
+            <tr className="bg-gradient-to-r from-amber-700 via-sky-800 to-blue-900 text-white font-bold border-t-2 border-amber-400">
+              <td colSpan={totalColumnsCount} className="py-2.5 px-3 sm:px-4 text-xs md:text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert className="w-4 h-4 text-amber-300 shrink-0" />
+                    <div>
+                      <span className="font-bold">
+                        ส่วนที่ 4 : ตารางผลประโยชน์ความคุ้มครองอุบัติเหตุ อบ.2
+                      </span>
+                      <span className="hidden sm:inline text-amber-200 font-normal ml-2 text-[11px]">
+                        (สูญเสียอวัยวะ สายตา ทุพพลภาพถาวรสิ้นเชิง และค่ารักษาอุบัติเหตุ)
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPaDetails(!showPaDetails)}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold bg-white/15 hover:bg-white/25 active:bg-white/30 text-amber-100 px-2.5 py-1 rounded-md transition-colors border border-amber-300/30"
+                  >
+                    <span>{showPaDetails ? 'ย่อข้อย่อย อบ.2' : 'ขยายข้อย่อย อบ.2 ทั้งหมด'}</span>
+                    {showPaDetails ? (
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            {/* Section 4 - Row 0: Accident Medical Treatment */}
+            {shouldShowRow('pa-accident-treatment') && (
+              <tr
+                className={`border-b border-slate-200 transition-colors ${
+                  isRowDiff('pa-accident-treatment')
+                    ? 'bg-amber-100/60 hover:bg-amber-100/80 font-medium'
+                    : 'hover:bg-slate-50/70'
+                }`}
+              >
+                <td className="py-2.5 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-4 sm:pl-5">
+                  <div className="flex items-center gap-1.5 text-slate-900 font-bold">
+                    <Stethoscope className="w-3.5 h-3.5 text-sky-700 shrink-0" />
+                    <span>ค่ารักษาพยาบาลจากอุบัติเหตุ ต่อครั้ง</span>
+                    <span className="text-[9px] bg-sky-100 text-sky-800 font-bold px-1.5 py-0.2 rounded border border-sky-300">
+                      ผู้ป่วยนอก & ใน
+                    </span>
+                  </div>
+                  <div className="text-[10px] sm:text-[11px] text-slate-500">
+                    (จ่ายตามค่าใช้จ่ายจริงที่เกิดขึ้น ไม่เกินวงเงินต่อครั้ง)
+                  </div>
+                </td>
+                {selectedPlans.map((plan) => {
+                  const treatmentAmount =
+                    plan.paSchedule?.accidentMedicalTreatment ?? plan.opd.accident;
+                  return (
+                    <td
+                      key={plan.id}
+                      className="py-2.5 px-3 sm:px-4 text-center border-r border-slate-100"
+                    >
+                      <div
+                        className={`text-xs sm:text-sm md:text-base font-black ${
+                          plan.category === 'pa' ? 'text-amber-700' : 'text-slate-900'
+                        }`}
+                      >
+                        {formatCurrency(treatmentAmount)}
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-normal">
+                        {plan.category === 'pa' ? 'วงเงินอุบัติเหตุ อบ.2' : 'คุ้มครองอุบัติเหตุฉุกเฉิน'}
+                      </div>
+                    </td>
+                  );
+                })}
+                {isCombinedVisible && combinedTotals && (
+                  <td className="py-2.5 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8]">
+                    <div className="font-black text-[#00509d] text-xs sm:text-sm md:text-base">
+                      {formatCurrency(combinedTotals.opdAccident)}
+                    </div>
+                  </td>
+                )}
+              </tr>
+            )}
+
+            {/* Subsection Header: อบ.2 Dismemberment & Disability */}
+            <tr className="bg-slate-100/90 font-bold text-slate-800 border-b border-slate-200 text-xs">
+              <td colSpan={totalColumnsCount} className="py-1.5 px-3 sm:px-4">
+                <span className="text-slate-900 font-bold">
+                  การชดเชยการสูญเสียอวัยวะ สายตา หรือทุพพลภาพถาวรสิ้นเชิง อันเนื่องมาจากอุบัติเหตุ
+                </span>
+                <span className="text-slate-500 font-normal ml-1">
+                  (ตามข้อตกลงคุ้มครอง อบ.2)
+                </span>
+              </td>
+            </tr>
+
+            {/* Row 4.1: Permanent Total Disability (100%) */}
+            {shouldShowRow('pa-permanent-disability') && (
+              <tr
+                className={`border-b border-slate-100 transition-colors ${
+                  isRowDiff('pa-permanent-disability')
+                    ? 'bg-amber-50/50 hover:bg-amber-100/40'
+                    : 'hover:bg-slate-50/70'
+                }`}
+              >
+                <td className="py-2 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-6 sm:pl-7">
+                  <div className="text-slate-800 font-semibold flex items-center justify-between">
+                    <span>1. ทุพพลภาพถาวรสิ้นเชิง</span>
+                    <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-1.5 py-0.2 rounded border border-sky-200 ml-1">
+                      100%
+                    </span>
+                  </div>
+                </td>
+                {selectedPlans.map((plan) => {
+                  const val = getPlanPaValue(plan, 'permanentDisability', 1.0);
+                  return (
+                    <td
+                      key={plan.id}
+                      className="py-2 px-3 sm:px-4 text-center border-r border-slate-100"
+                    >
+                      <div
+                        className={`text-xs sm:text-sm md:text-base font-bold ${
+                          plan.category === 'pa' ? 'text-sky-950 font-black' : 'text-slate-900'
+                        }`}
+                      >
+                        {formatCurrency(val)}
+                      </div>
+                    </td>
+                  );
+                })}
+                {isCombinedVisible && combinedTotals && (
+                  <td className="py-2 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8]">
+                    <div className="font-black text-[#00509d] text-xs sm:text-sm md:text-base">
+                      {formatCurrency(combinedTotals.paPermanentDisability)}
+                    </div>
+                  </td>
+                )}
+              </tr>
+            )}
+
+            {/* Row 4.2: Loss of 2 limbs or 2 eyes (100%) */}
+            {shouldShowRow('pa-two-limbs') && (
+              <tr
+                className={`border-b border-slate-100 transition-colors ${
+                  isRowDiff('pa-two-limbs')
+                    ? 'bg-amber-50/50 hover:bg-amber-100/40'
+                    : 'hover:bg-slate-50/70'
+                }`}
+              >
+                <td className="py-2 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-6 sm:pl-7">
+                  <div className="text-slate-800 font-medium">
+                    2. มือ 2 ข้าง หรือเท้า 2 ข้าง หรือสายตา 2 ข้าง
+                  </div>
+                  <div className="text-[10px] text-slate-500">
+                    หรืออย่างใดอย่างหนึ่งรวมกันตั้งแต่ 2 อย่างขึ้นไป
+                  </div>
+                </td>
+                {selectedPlans.map((plan) => {
+                  const val = getPlanPaValue(plan, 'twoLimbsOrEyes', 1.0);
+                  return (
+                    <td
+                      key={plan.id}
+                      className="py-2 px-3 sm:px-4 text-center border-r border-slate-100"
+                    >
+                      <div className="font-bold text-slate-900 text-xs sm:text-sm md:text-base">
+                        {formatCurrency(val)}
+                      </div>
+                      <div className="text-[10px] text-sky-600 font-semibold">100%</div>
+                    </td>
+                  );
+                })}
+                {isCombinedVisible && combinedTotals && (
+                  <td className="py-2 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8]">
+                    <div className="font-black text-[#00509d] text-xs sm:text-sm md:text-base">
+                      {formatCurrency(combinedTotals.paTwoLimbsOrEyes)}
+                    </div>
+                  </td>
+                )}
+              </tr>
+            )}
+
+            {/* Row 4.3: Loss of 1 limb or 1 eye (60%) */}
+            {shouldShowRow('pa-one-limb') && (
+              <tr
+                className={`border-b border-slate-100 transition-colors ${
+                  isRowDiff('pa-one-limb')
+                    ? 'bg-amber-50/50 hover:bg-amber-100/40'
+                    : 'hover:bg-slate-50/70'
+                }`}
+              >
+                <td className="py-2 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-6 sm:pl-7">
+                  <div className="text-slate-800 font-medium">
+                    3. มือ 1 ข้าง หรือเท้า 1 ข้าง หรือสายตา 1 ข้าง
+                  </div>
+                </td>
+                {selectedPlans.map((plan) => {
+                  const val = getPlanPaValue(plan, 'oneLimbOrEye', 0.6);
+                  return (
+                    <td
+                      key={plan.id}
+                      className="py-2 px-3 sm:px-4 text-center border-r border-slate-100"
+                    >
+                      <div className="font-bold text-slate-900 text-xs sm:text-sm md:text-base">
+                        {formatCurrency(val)}
+                      </div>
+                      <div className="text-[10px] text-sky-600 font-semibold">60%</div>
+                    </td>
+                  );
+                })}
+                {isCombinedVisible && combinedTotals && (
+                  <td className="py-2 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8]">
+                    <div className="font-black text-[#00509d] text-xs sm:text-sm md:text-base">
+                      {formatCurrency(combinedTotals.paOneLimbOrEye)}
+                    </div>
+                  </td>
+                )}
+              </tr>
+            )}
+
+            {/* Collapsible Detailed Schedule Rows */}
+            {showPaDetails && (
+              <>
+                {/* Row 4.4: Deaf both ears or mute (50%) */}
+                <tr className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+                  <td className="py-1.5 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-6 sm:pl-7">
+                    <div className="text-slate-800 font-normal">
+                      4. หูหนวกทั้ง 2 ข้าง หรือเป็นใบ้
+                    </div>
+                  </td>
+                  {selectedPlans.map((plan) => {
+                    const val = getPlanPaValue(plan, 'deafBothOrMute', 0.5);
+                    return (
+                      <td
+                        key={plan.id}
+                        className="py-1.5 px-3 sm:px-4 text-center border-r border-slate-100"
+                      >
+                        <div className="font-medium text-slate-900 text-xs sm:text-sm">
+                          {formatCurrency(val)}
+                        </div>
+                        <div className="text-[9px] text-slate-400">50%</div>
+                      </td>
+                    );
+                  })}
+                  {isCombinedVisible && combinedTotals && (
+                    <td className="py-1.5 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8]">
+                      <div className="font-bold text-[#00509d] text-xs sm:text-sm">
+                        {formatCurrency(combinedTotals.paDeafBothOrMute)}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+
+                {/* Row 4.5: Thumb 2 joints (25%) */}
+                <tr className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+                  <td className="py-1.5 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-6 sm:pl-7">
+                    <div className="text-slate-800 font-normal">
+                      5. สูญเสียนิ้วหัวแม่มือ (อย่างน้อย 2 ข้อ)
+                    </div>
+                  </td>
+                  {selectedPlans.map((plan) => {
+                    const val = getPlanPaValue(plan, 'thumbTwoJoints', 0.25);
+                    return (
+                      <td
+                        key={plan.id}
+                        className="py-1.5 px-3 sm:px-4 text-center border-r border-slate-100"
+                      >
+                        <div className="font-medium text-slate-900 text-xs sm:text-sm">
+                          {formatCurrency(val)}
+                        </div>
+                        <div className="text-[9px] text-slate-400">25%</div>
+                      </td>
+                    );
+                  })}
+                  {isCombinedVisible && combinedTotals && (
+                    <td className="py-1.5 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8]">
+                      <div className="font-bold text-[#00509d] text-xs sm:text-sm">
+                        {formatCurrency(combinedTotals.paThumbTwoJoints)}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+
+                {/* Row 4.6: Deaf 1 ear (15%) */}
+                <tr className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+                  <td className="py-1.5 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-6 sm:pl-7">
+                    <div className="text-slate-800 font-normal">
+                      6. หูหนวก 1 ข้าง
+                    </div>
+                  </td>
+                  {selectedPlans.map((plan) => {
+                    const val = getPlanPaValue(plan, 'deafOneEar', 0.15);
+                    return (
+                      <td
+                        key={plan.id}
+                        className="py-1.5 px-3 sm:px-4 text-center border-r border-slate-100"
+                      >
+                        <div className="font-medium text-slate-900 text-xs sm:text-sm">
+                          {formatCurrency(val)}
+                        </div>
+                        <div className="text-[9px] text-slate-400">15%</div>
+                      </td>
+                    );
+                  })}
+                  {isCombinedVisible && combinedTotals && (
+                    <td className="py-1.5 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8]">
+                      <div className="font-bold text-[#00509d] text-xs sm:text-sm">
+                        {formatCurrency(combinedTotals.paDeafOneEar)}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+
+                {/* Row 4.7: Thumb 1 joint (10%) */}
+                <tr className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+                  <td className="py-1.5 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-6 sm:pl-7">
+                    <div className="text-slate-800 font-normal">
+                      7. สูญเสียนิ้วหัวแม่มือ (1 ข้อ)
+                    </div>
+                  </td>
+                  {selectedPlans.map((plan) => {
+                    const val = getPlanPaValue(plan, 'thumbOneJoint', 0.1);
+                    return (
+                      <td
+                        key={plan.id}
+                        className="py-1.5 px-3 sm:px-4 text-center border-r border-slate-100"
+                      >
+                        <div className="font-medium text-slate-900 text-xs sm:text-sm">
+                          {formatCurrency(val)}
+                        </div>
+                        <div className="text-[9px] text-slate-400">10%</div>
+                      </td>
+                    );
+                  })}
+                  {isCombinedVisible && combinedTotals && (
+                    <td className="py-1.5 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8]">
+                      <div className="font-bold text-[#00509d] text-xs sm:text-sm">
+                        {formatCurrency(combinedTotals.paThumbOneJoint)}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+
+                {/* Row 4.8: Index finger 3 joints (10%) */}
+                <tr className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+                  <td className="py-1.5 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-6 sm:pl-7">
+                    <div className="text-slate-800 font-normal">
+                      8. สูญเสียนิ้วชี้ (อย่างน้อย 3 ข้อ)
+                    </div>
+                  </td>
+                  {selectedPlans.map((plan) => {
+                    const val = getPlanPaValue(plan, 'indexFingerThreeJoints', 0.1);
+                    return (
+                      <td
+                        key={plan.id}
+                        className="py-1.5 px-3 sm:px-4 text-center border-r border-slate-100"
+                      >
+                        <div className="font-medium text-slate-900 text-xs sm:text-sm">
+                          {formatCurrency(val)}
+                        </div>
+                        <div className="text-[9px] text-slate-400">10%</div>
+                      </td>
+                    );
+                  })}
+                  {isCombinedVisible && combinedTotals && (
+                    <td className="py-1.5 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8]">
+                      <div className="font-bold text-[#00509d] text-xs sm:text-sm">
+                        {formatCurrency(combinedTotals.paIndexFingerThreeJoints)}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+
+                {/* Row 4.9: Index finger 2 joints (8%) */}
+                <tr className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+                  <td className="py-1.5 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-6 sm:pl-7">
+                    <div className="text-slate-800 font-normal">
+                      9. สูญเสียนิ้วชี้ (2 ข้อ)
+                    </div>
+                  </td>
+                  {selectedPlans.map((plan) => {
+                    const val = getPlanPaValue(plan, 'indexFingerTwoJoints', 0.08);
+                    return (
+                      <td
+                        key={plan.id}
+                        className="py-1.5 px-3 sm:px-4 text-center border-r border-slate-100"
+                      >
+                        <div className="font-medium text-slate-900 text-xs sm:text-sm">
+                          {formatCurrency(val)}
+                        </div>
+                        <div className="text-[9px] text-slate-400">8%</div>
+                      </td>
+                    );
+                  })}
+                  {isCombinedVisible && combinedTotals && (
+                    <td className="py-1.5 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8]">
+                      <div className="font-bold text-[#00509d] text-xs sm:text-sm">
+                        {formatCurrency(combinedTotals.paIndexFingerTwoJoints)}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+
+                {/* Row 4.10: Index finger 1 joint (4%) */}
+                <tr className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+                  <td className="py-1.5 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-6 sm:pl-7">
+                    <div className="text-slate-800 font-normal">
+                      10. สูญเสียนิ้วชี้ (1 ข้อ)
+                    </div>
+                  </td>
+                  {selectedPlans.map((plan) => {
+                    const val = getPlanPaValue(plan, 'indexFingerOneJoint', 0.04);
+                    return (
+                      <td
+                        key={plan.id}
+                        className="py-1.5 px-3 sm:px-4 text-center border-r border-slate-100"
+                      >
+                        <div className="font-medium text-slate-900 text-xs sm:text-sm">
+                          {formatCurrency(val)}
+                        </div>
+                        <div className="text-[9px] text-slate-400">4%</div>
+                      </td>
+                    );
+                  })}
+                  {isCombinedVisible && combinedTotals && (
+                    <td className="py-1.5 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8]">
+                      <div className="font-bold text-[#00509d] text-xs sm:text-sm">
+                        {formatCurrency(combinedTotals.paIndexFingerOneJoint)}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+
+                {/* Row 4.11: Other fingers 2 joints (5%) */}
+                <tr className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+                  <td className="py-1.5 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-6 sm:pl-7">
+                    <div className="text-slate-800 font-normal">
+                      11. สูญเสียนิ้วอื่น ๆ นอกจากนิ้วหัวแม่มือและนิ้วชี้ (อย่างน้อย 2 ข้อ) ต่อนิ้ว
+                    </div>
+                  </td>
+                  {selectedPlans.map((plan) => {
+                    const val = getPlanPaValue(plan, 'otherFingersTwoJoints', 0.05);
+                    return (
+                      <td
+                        key={plan.id}
+                        className="py-1.5 px-3 sm:px-4 text-center border-r border-slate-100"
+                      >
+                        <div className="font-medium text-slate-900 text-xs sm:text-sm">
+                          {formatCurrency(val)}
+                        </div>
+                        <div className="text-[9px] text-slate-400">5%</div>
+                      </td>
+                    );
+                  })}
+                  {isCombinedVisible && combinedTotals && (
+                    <td className="py-1.5 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8]">
+                      <div className="font-bold text-[#00509d] text-xs sm:text-sm">
+                        {formatCurrency(combinedTotals.paOtherFingersTwoJoints)}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+
+                {/* Row 4.12: Big toe (5%) */}
+                <tr className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+                  <td className="py-1.5 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-6 sm:pl-7">
+                    <div className="text-slate-800 font-normal">
+                      12. สูญเสียนิ้วหัวแม่เท้า
+                    </div>
+                  </td>
+                  {selectedPlans.map((plan) => {
+                    const val = getPlanPaValue(plan, 'bigToe', 0.05);
+                    return (
+                      <td
+                        key={plan.id}
+                        className="py-1.5 px-3 sm:px-4 text-center border-r border-slate-100"
+                      >
+                        <div className="font-medium text-slate-900 text-xs sm:text-sm">
+                          {formatCurrency(val)}
+                        </div>
+                        <div className="text-[9px] text-slate-400">5%</div>
+                      </td>
+                    );
+                  })}
+                  {isCombinedVisible && combinedTotals && (
+                    <td className="py-1.5 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8]">
+                      <div className="font-bold text-[#00509d] text-xs sm:text-sm">
+                        {formatCurrency(combinedTotals.paBigToe)}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+
+                {/* Row 4.13: Other fingers 1 joint (1%) */}
+                <tr className="border-b-2 border-slate-300 hover:bg-slate-50/70 transition-colors">
+                  <td className="py-1.5 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-6 sm:pl-7">
+                    <div className="text-slate-800 font-normal">
+                      13. สูญเสียนิ้วอื่น ๆ นอกจากนิ้วหัวแม่เท้า (1 ข้อ) ต่อนิ้ว
+                    </div>
+                  </td>
+                  {selectedPlans.map((plan) => {
+                    const val = getPlanPaValue(plan, 'otherFingersOneJoint', 0.01);
+                    return (
+                      <td
+                        key={plan.id}
+                        className="py-1.5 px-3 sm:px-4 text-center border-r border-slate-100"
+                      >
+                        <div className="font-medium text-slate-900 text-xs sm:text-sm">
+                          {formatCurrency(val)}
+                        </div>
+                        <div className="text-[9px] text-slate-400">1%</div>
+                      </td>
+                    );
+                  })}
+                  {isCombinedVisible && combinedTotals && (
+                    <td className="py-1.5 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8]">
+                      <div className="font-bold text-[#00509d] text-xs sm:text-sm">
+                        {formatCurrency(combinedTotals.paOtherFingersOneJoint)}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              </>
             )}
           </tbody>
 
@@ -1576,6 +1972,14 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
             </tr>
           </tfoot>
         </table>
+      </div>
+
+      {/* Terms and Conditions Section (displayed on comparison page and included in all PDF/Print exports) */}
+      <div className="p-3 sm:p-5 bg-slate-50 border-t border-slate-200">
+        <PolicyTermsNotice
+          coordinatorName={exportMeta?.coordinatorName}
+          coordinatorPhone={exportMeta?.coordinatorPhone}
+        />
       </div>
     </div>
   );
