@@ -6,6 +6,7 @@ import {
   Bell,
   Printer,
   FileDown,
+  Eye,
   User,
   History,
   Settings,
@@ -16,24 +17,28 @@ interface SmileSaleHeaderProps {
   onToggleSidebar: () => void;
   onOpenHistory: () => void;
   onOpenExport: () => void;
+  onOpenPreview?: () => void;
   onOpenPlanSettings?: () => void;
   onPrint: () => void;
   historyCount: number;
   markedCount: number;
   exportMeta: ExportMeta;
   existingCustomer?: CustomerProfile | null;
+  selectedPlansCount?: number;
 }
 
 export const SmileSaleHeader: React.FC<SmileSaleHeaderProps> = ({
   onToggleSidebar,
   onOpenHistory,
   onOpenExport,
+  onOpenPreview,
   onOpenPlanSettings,
   onPrint,
   historyCount,
   markedCount,
   exportMeta,
   existingCustomer,
+  selectedPlansCount = 0,
 }) => {
   const agentDisplayName = exportMeta.agentFirstName
     ? `${exportMeta.agentFirstName} (${exportMeta.agentOfficeCode || '05741'})`
@@ -61,8 +66,20 @@ export const SmileSaleHeader: React.FC<SmileSaleHeaderProps> = ({
 
         {/* Right Action Icons & User Profile */}
         <div className="flex items-center gap-2 sm:gap-4">
-          {/* Quick Print & Export Buttons */}
+          {/* Quick Preview, Print & Export Buttons */}
           <div className="flex items-center gap-1.5 sm:gap-2">
+            {onOpenPreview && (
+              <button
+                type="button"
+                onClick={onOpenPreview}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-blue-900 text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                title="พรีวิวแผนก่อนสั่งพิมพ์หรือส่งออก"
+              >
+                <Eye className="w-3.5 h-3.5 text-blue-600" />
+                <span>พรีวิวแผน</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={onPrint}

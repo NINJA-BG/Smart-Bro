@@ -15,6 +15,7 @@ import { ComparisonTable } from './components/ComparisonTable';
 import { ExportModal } from './components/ExportModal';
 import { HistoryModal } from './components/HistoryModal';
 import { PlanSettingsModal } from './components/PlanSettingsModal';
+import { PlanPreviewModal } from './components/PlanPreviewModal';
 import { triggerPrint } from './utils/pdfExport';
 import {
   loadStoredPlans,
@@ -39,6 +40,11 @@ import {
   CheckCircle2,
   BookmarkPlus,
   RotateCcw,
+  Eye,
+  ArrowLeft,
+  SlidersHorizontal,
+  Layers,
+  ChevronRight,
 } from 'lucide-react';
 
 export default function App() {
@@ -58,12 +64,14 @@ export default function App() {
   );
   const [isPlanSettingsOpen, setIsPlanSettingsOpen] = useState<boolean>(false);
 
-  // Selected plans for comparison (empty by default, user selects freely)
+  // Selected plans for comparison (max 3 plans, empty by default, user selects freely)
   const [selectedPlanIds, setSelectedPlanIds] = useState<string[]>([]);
+  const [currentView, setCurrentView] = useState<'selection' | 'comparison'>('selection');
 
   const [filterMode, setFilterMode] = useState<ViewFilterMode>('all');
   const [highlightDiffs, setHighlightDiffs] = useState<boolean>(true);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
+  const [isPlanPreviewOpen, setIsPlanPreviewOpen] = useState<boolean>(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState<boolean>(false);
   const [historyList, setHistoryList] = useState<ComparisonHistoryItem[]>(() => getComparisonHistory());
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -189,6 +197,38 @@ export default function App() {
     selectedPlanIds.includes(p.id)
   );
 
+  const handleOpenPlanPreview = () => {
+    if (selectedPlans.length === 0) {
+      showToast('กรุณาเลือกแผนประกันภัยอย่างน้อย 1 แผนเพื่อพรีวิว');
+      return;
+    }
+    setIsPlanPreviewOpen(true);
+  };
+
+  const handleGoToComparison = () => {
+    if (selectedPlanIds.length === 0) {
+      showToast('กรุณาเลือกแผนประกันภัย 1 - 3 แผนเพื่อเปรียบเทียบ');
+      return;
+    }
+    setCurrentView('comparison');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBackToSelection = () => {
+    setCurrentView('selection');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSwapPlan = (oldPlanId: string, newPlanId: string) => {
+    setSelectedPlanIds((prev) =>
+      prev.map((id) => (id === oldPlanId ? newPlanId : id))
+    );
+    const newPlan = plans.find((p) => p.id === newPlanId);
+    if (newPlan) {
+      showToast(`เปลี่ยนเป็น ${newPlan.name} เรียบร้อยแล้ว`);
+    }
+  };
+
   // History Actions
   const handleSaveCurrentComparison = () => {
     const planNames = selectedPlans.map((p) => `${p.code} (${p.name})`);
@@ -230,6 +270,7 @@ export default function App() {
   const handleRestoreComparison = (item: ComparisonHistoryItem) => {
     if (item.selectedPlanIds && item.selectedPlanIds.length > 0) {
       setSelectedPlanIds(item.selectedPlanIds);
+      setCurrentView('comparison');
     }
 
     setExportMeta((prev) => ({
@@ -278,6 +319,7 @@ export default function App() {
           if (menu === 'benefits-ph' || menu === 'plan-settings') {
             setIsPlanSettingsOpen(true);
           } else if (menu === 'smart-brochure') {
+            setCurrentView('selection');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         }}
@@ -294,104 +336,180 @@ export default function App() {
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           onOpenHistory={() => setIsHistoryModalOpen(true)}
           onOpenExport={() => setIsExportModalOpen(true)}
+          onOpenPreview={handleOpenPlanPreview}
           onOpenPlanSettings={() => setIsPlanSettingsOpen(true)}
           onPrint={() => triggerPrint()}
           historyCount={historyList.length}
           markedCount={markedHistoryCount}
           exportMeta={exportMeta}
           existingCustomer={existingCustomer}
+          selectedPlansCount={selectedPlans.length}
         />
 
         {/* Page Content Container */}
         <main className="flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-5 max-w-7xl w-full mx-auto space-y-4 sm:space-y-5">
-          {/* Centered Hero Header exactly as in screenshot */}
-          <section className="text-center pt-1 sm:pt-2">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-              ทำประกัน<span className="text-[#0088cc]">สุขภาพ</span>กับสยามสไมล์
-            </h1>
-            <p className="text-xs sm:text-sm md:text-base text-slate-600 font-medium mt-1.5">
-              "Smile Health สุขภาพ อุบัติเหตุ โรคร้ายแรง ชำระรายเดือนได้"
-            </p>
-            <div className="border-b border-dotted border-[#9dc4e8] w-full max-w-3xl mx-auto my-3.5" />
-          </section>
+          {currentView === 'selection' ? (
+            <>
+              {/* Centered Hero Header exactly as in screenshot */}
+              <section className="text-center pt-1 sm:pt-2">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+                  ทำประกัน<span className="text-[#0088cc]">สุขภาพ</span>กับสยามสไมล์
+                </h1>
+                <p className="text-xs sm:text-sm md:text-base text-slate-600 font-medium mt-1.5">
+                  "Smile Health สุขภาพ อุบัติเหตุ โรคร้ายแรง ชำระรายเดือนได้"
+                </p>
+                <div className="border-b border-dotted border-[#9dc4e8] w-full max-w-3xl mx-auto my-3.5" />
+              </section>
 
-          {/* Search / Price Check Card (เช็คราคาประกันสุขภาพ) */}
-          <section aria-label="เช็คราคาประกันสุขภาพ">
-            <SmileSaleSearchCard
-              onConfirmAge={handleConfirmAge}
-              onReset={handleResetSearch}
-              allPlans={plans}
-              initialDob={userDob}
-              existingCustomer={existingCustomer}
-              currentAge={userAge}
-            />
-          </section>
+              {/* Search / Price Check Card (เช็คราคาประกันสุขภาพ) */}
+              <section aria-label="เช็คราคาประกันสุขภาพ">
+                <SmileSaleSearchCard
+                  onConfirmAge={handleConfirmAge}
+                  onReset={handleResetSearch}
+                  allPlans={plans}
+                  initialDob={userDob}
+                  existingCustomer={existingCustomer}
+                  currentAge={userAge}
+                />
+              </section>
 
-          {/* Section: "แพ็กเกจและความคุ้มครอง" exactly as in screenshot */}
-          <section className="pt-2">
-            <div className="text-center mb-5">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 tracking-tight">
-                แพ็กเกจและความคุ้มครอง
-              </h2>
-            </div>
+              {/* Section: "แพ็กเกจและความคุ้มครอง" (เลือกแผนก่อน ไม่เกิน 3 แผน แล้วค่อยกดเปรียบเทียบ) */}
+              <section className="pt-2">
+                <div className="text-center mb-5">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 tracking-tight">
+                    แพ็กเกจและความคุ้มครอง
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    เลือกแผนที่สนใจ (สูงสุดไม่เกิน 3 แผน) แล้วกดปุ่ม <strong>"กดเปรียบเทียบแผน"</strong> เพื่อดูรายละเอียด
+                  </p>
+                </div>
 
-            {/* Plan Selector (15-I, 15-O, 610-I, 610-O, PA 60, PA 90, PA 120, PA 150) */}
-            <div className="mb-4">
-              <PlanSelector
+                {/* Plan Selector (15-I, 15-O, 610-I, 610-O, PA 60, PA 90, PA 120, PA 150) */}
+                <div className="mb-4">
+                  <PlanSelector
+                    allPlans={plans}
+                    selectedPlanIds={selectedPlanIds}
+                    onTogglePlan={handleTogglePlan}
+                    onSetSelection={handleSetSelection}
+                    currentAge={userAge}
+                    existingCustomer={existingCustomer}
+                    onResetCustomer={handleResetSearch}
+                    onOpenPlanSettings={() => setIsPlanSettingsOpen(true)}
+                    onGoToComparison={handleGoToComparison}
+                  />
+                </div>
+              </section>
+            </>
+          ) : (
+            /* Dedicated Comparison View (เปิดเป็นอีก UI เพื่อดูรายละเอียด สามารถเพิ่มลดแก้ไขแผนในหน้านี้ได้) */
+            <section className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+              {/* Header Navigation Bar for Comparison Page */}
+              <div className="bg-white rounded-2xl border border-slate-200/90 p-3.5 sm:p-5 shadow-2xs space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleBackToSelection}
+                      className="p-2 sm:p-2.5 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 transition-colors cursor-pointer border border-slate-200 shrink-0"
+                      title="ย้อนกลับไปหน้าเลือกแผน"
+                    >
+                      <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
+                    </button>
+
+                    <div>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                        <span
+                          onClick={handleBackToSelection}
+                          className="hover:text-blue-600 hover:underline cursor-pointer"
+                        >
+                          หน้าเลือกแผน
+                        </span>
+                        <ChevronRight className="w-3 h-3 text-slate-400" />
+                        <span className="text-blue-700 font-bold">
+                          รายละเอียดการเปรียบเทียบ ({selectedPlans.length}/3 แผน)
+                        </span>
+                      </div>
+                      <h1 className="text-base sm:text-lg md:text-xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+                        ตารางเปรียบเทียบผลประโยชน์ความคุ้มครอง
+                      </h1>
+                    </div>
+                  </div>
+
+                  {/* Actions Row */}
+                  <div className="flex items-center gap-2 flex-wrap self-end sm:self-auto">
+                    <button
+                      type="button"
+                      onClick={handleOpenPlanPreview}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-900 text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                      title="พรีวิวเอกสารข้อเสนอก่อนสั่งพิมพ์หรือส่งออก"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-blue-600" />
+                      <span>พรีวิวแผนก่อนส่ง/พิมพ์</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleSaveCurrentComparison}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+                      title="บันทึกชุดเปรียบเทียบนี้ไว้ในประวัติระบบ"
+                    >
+                      <BookmarkPlus className="w-3.5 h-3.5 text-blue-600" />
+                      <span>บันทึกชุดแผนนี้</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleBackToSelection}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">เลือกแผนเพิ่ม/แก้ไข</span>
+                      <span className="sm:hidden">กลับ</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Customer summary if available */}
+                {existingCustomer && (
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-xs text-slate-600">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[11px]">
+                        ลูกค้าเดิม
+                      </span>
+                      <span className="font-semibold text-slate-800">
+                        {existingCustomer.fullName}
+                      </span>
+                      <span className="text-slate-400">
+                        (อายุ {existingCustomer.age} ปี / ถือครอง {existingCustomer.policies?.length || 1} กรมธรรม์)
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Comprehensive Comparison Table (พร้อมแถบเพิ่ม/ลด/แก้ไขแผนในหน้านี้ได้ทันที) */}
+              <ComparisonTable
+                selectedPlans={selectedPlans}
                 allPlans={plans}
-                selectedPlanIds={selectedPlanIds}
-                onTogglePlan={handleTogglePlan}
-                onSetSelection={handleSetSelection}
-                currentAge={userAge}
+                filterMode={filterMode}
+                onFilterModeChange={setFilterMode}
+                highlightDiffs={highlightDiffs}
+                onToggleHighlightDiffs={() => setHighlightDiffs((prev) => !prev)}
+                exportMeta={exportMeta}
                 existingCustomer={existingCustomer}
-                onResetCustomer={handleResetSearch}
-                onOpenPlanSettings={() => setIsPlanSettingsOpen(true)}
+                currentAge={userAge}
+                onSelectExistingCustomer={(customer) =>
+                  customer
+                    ? handleConfirmAge(customer.age, customer.birthDate, customer)
+                    : handleResetSearch()
+                }
+                onTogglePlan={handleTogglePlan}
+                onOpenPreview={handleOpenPlanPreview}
+                onBackToSelection={handleBackToSelection}
+                onSwapPlan={handleSwapPlan}
               />
-            </div>
-
-            {/* Quick Action Bar for Plan Selection & Comparison Saving */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 px-1 no-print">
-              <div className="flex items-center gap-2 text-xs">
-                <span className="font-bold text-[#00509d]">
-                  กำลังเปรียบเทียบ {selectedPlans.length} แผน:
-                </span>
-                <span className="text-slate-600 font-medium">
-                  {selectedPlans.map((p) => p.code).join(' vs ')}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 self-end sm:self-auto">
-                <button
-                  type="button"
-                  onClick={handleSaveCurrentComparison}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
-                  title="บันทึกชุดเปรียบเทียบนี้ไว้ในประวัติระบบ"
-                >
-                  <BookmarkPlus className="w-3.5 h-3.5 text-blue-600" />
-                  <span>บันทึกชุดแผนนี้</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Comprehensive Comparison Table (with Top-up Combined column & diff highlights) */}
-            <ComparisonTable
-              selectedPlans={selectedPlans}
-              allPlans={plans}
-              filterMode={filterMode}
-              onFilterModeChange={setFilterMode}
-              highlightDiffs={highlightDiffs}
-              onToggleHighlightDiffs={() => setHighlightDiffs((prev) => !prev)}
-              exportMeta={exportMeta}
-              existingCustomer={existingCustomer}
-              currentAge={userAge}
-              onSelectExistingCustomer={(customer) =>
-                customer
-                  ? handleConfirmAge(customer.age, customer.birthDate, customer)
-                  : handleResetSearch()
-              }
-              onTogglePlan={handleTogglePlan}
-            />
-          </section>
+            </section>
+          )}
         </main>
       </div>
 
@@ -414,8 +532,25 @@ export default function App() {
         exportMeta={exportMeta}
         onUpdateMeta={setExportMeta}
         onSaveToHistory={handleSaveCurrentComparison}
+        onOpenPreview={handleOpenPlanPreview}
         existingCustomer={existingCustomer}
         userAge={userAge}
+      />
+
+      {/* Plan Preview Modal (พรีวิวแผนและเอกสารข้อเสนอก่อนกดส่งหรือกดพิมพ์) */}
+      <PlanPreviewModal
+        isOpen={isPlanPreviewOpen}
+        onClose={() => setIsPlanPreviewOpen(false)}
+        selectedPlans={selectedPlans}
+        allPlans={plans}
+        exportMeta={exportMeta}
+        existingCustomer={existingCustomer}
+        userAge={userAge}
+        onOpenExportSettings={() => {
+          setIsPlanPreviewOpen(false);
+          setIsExportModalOpen(true);
+        }}
+        onSaveToHistory={handleSaveCurrentComparison}
       />
 
       {/* History Modal */}

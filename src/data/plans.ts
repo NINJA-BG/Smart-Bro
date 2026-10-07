@@ -1,4 +1,4 @@
-import { InsurancePlan } from '../types';
+import { InsurancePlan, PlanTargetAudience } from '../types';
 
 export const INSURANCE_PLANS: InsurancePlan[] = [
   {
@@ -817,3 +817,97 @@ export function analyzeDifferences(selectedPlans: InsurancePlan[]): DiffRowItem[
     };
   });
 }
+
+export interface PlanPrimaryAudienceInfo {
+  type: 'private' | 'government' | 'general';
+  label: string;
+}
+
+export function getPlanPrimaryAudience(planId: string): PlanPrimaryAudienceInfo {
+  switch (planId) {
+    case 'plan-15-i':
+      return { type: 'private', label: '🏢 พนักงานเอกชน' };
+    case 'plan-15-o':
+      return { type: 'general', label: '👤 ลูกค้าทั่วไป' };
+    case 'plan-610-i':
+      return { type: 'government', label: '🏛️ ข้าราชการ / รัฐวิสาหกิจ' };
+    case 'plan-610-o':
+      return { type: 'general', label: '👤 ลูกค้าทั่วไป' };
+    case 'plan-pa-60':
+      return { type: 'general', label: '👤 ลูกค้าทั่วไป' };
+    case 'plan-pa-90':
+      return { type: 'private', label: '🏢 พนักงานเอกชน' };
+    case 'plan-pa-120':
+      return { type: 'government', label: '🏛️ ข้าราชการ / รัฐวิสาหกิจ' };
+    case 'plan-pa-150':
+      return { type: 'government', label: '🏛️ ข้าราชการ / รัฐวิสาหกิจ' };
+    default:
+      return { type: 'general', label: '👤 ลูกค้าทั่วไป' };
+  }
+}
+
+/**
+ * Get tailored benefits description for Private Sector, Government/State Enterprise, and General Public
+ */
+export function getPlanTargetAudience(planId: string, customAudience?: PlanTargetAudience): PlanTargetAudience {
+  if (customAudience && customAudience.privateSector && customAudience.government && customAudience.generalPublic) {
+    return customAudience;
+  }
+  switch (planId) {
+    case 'plan-15-i':
+      return {
+        privateSector: 'Top-up สิทธิ ปกส./ประกันกลุ่ม ค่าห้อง 1,200 บ. + ผ่าตัด 30,000 บ.',
+        government: 'เสริมค่าห้องพิเศษ + แพทย์เยี่ยมไข้ + ชดเชยรายวัน 300 บ./วัน',
+        generalPublic: 'แผนหลักราคาประหยัด จ่าย 1,590 บ./ด. คุ้มครองชีวิต 2 แสน',
+      };
+    case 'plan-15-o':
+      return {
+        privateSector: 'ครบทั้ง IPD และ OPD 500 บ./ครั้ง (9 ครั้ง/ปี) ไม่ต้องรอคิว ปกส.',
+        government: 'ใช้พบแพทย์คลินิกพิเศษนอกเวลา + เสริมค่าห้องส่วนเกิน 1,200 บ.',
+        generalPublic: 'ยอดนิยมครบวงจร รวมหาหมอหวัด ท้องเสีย สบายใจ 1,890 บ./ด.',
+      };
+    case 'plan-610-i':
+      return {
+        privateSector: 'อัปเกรดนอน รพ.เอกชน ค่าห้อง 2,000 บ. ผ่าตัด 40,000 บ. ชีวิต 3 แสน',
+        government: 'เติมเต็มค่าห้องเดี่ยวมาตรฐาน + รับเงินชดเชยรายวัน 500 บ./วัน',
+        generalPublic: 'ความคุ้มครองพรีเมียมทุกวัย (6-65 ปี) เบี้ยเริ่ม 1,890 บ./ด.',
+      };
+    case 'plan-610-o':
+      return {
+        privateSector: 'OPD สูง 1,000 บ./ครั้ง (12 ครั้ง/ปี) นอนห้องเดี่ยวสบาย เบิกได้เต็ม',
+        government: 'ยกระดับความคุ้มครองสูงสุด คลินิกนอกเวลา + ชดเชย 500 บ./วัน',
+        generalPublic: 'แพ็กเกจสูงสุดสำหรับครอบครัวและเด็กเล็ก สบายใจทุกการรักษา',
+      };
+    case 'plan-pa-60':
+      return {
+        privateSector: 'อุบัติเหตุ 24 ชม. ทั่วโลก ทุน 1 แสน ค่ารักษา 5,000 บ. ไม่ต้องสำรองจ่าย',
+        government: 'เสริมคุ้มครองการเดินทาง ขับขี่มอเตอร์ไซค์ และลอบทำร้าย',
+        generalPublic: 'เบี้ยถูกที่สุดเพียง 60 บ./ด. (2 บ./วัน) อุ่นใจทุกอุบัติเหตุ',
+      };
+    case 'plan-pa-90':
+      return {
+        privateSector: 'ทุนอุบัติเหตุ 1.5 แสน ค่ารักษา 7,500 บ./ครั้ง บัตรแคร์การ์ดรูดจ่ายได้',
+        government: 'เสริมสวัสดิการอุบัติเหตุครอบคลุม 24 ชม. ทั่วประเทศ',
+        generalPublic: 'เบี้ยคุ้มค่าเพียง 90 บ./ด. (3 บ./วัน) อุ่นใจทุกงาน',
+      };
+    case 'plan-pa-120':
+      return {
+        privateSector: 'ทุน 2 แสน ค่ารักษา 10,000 บ./ครั้ง เหมาะกับสายเดินทางและเซลส์',
+        government: 'วงเงินค่ารักษาและคุ้มครองชีวิตสูง ปลอดภัยทุกภารกิจ',
+        generalPublic: 'เหมาะกับผู้ประกอบอาชีพอิสระ ค้าขาย สัญจรประจำ',
+      };
+    case 'plan-pa-150':
+      return {
+        privateSector: 'วงเงินอุบัติเหตุสูงสุด ทุน 3 แสน ค่ารักษา 15,000 บ./ครั้ง',
+        government: 'คุ้มครองเต็มแม็กซ์ เสริมความมั่นคงสูงสุดให้ครอบครัว',
+        generalPublic: 'ชดเชยและค่ารักษาอุบัติเหตุระดับพรีเมียม เพียง 5 บ./วัน',
+      };
+    default:
+      return {
+        privateSector: 'เสริมสวัสดิการพนักงานเอกชนและประกันสังคม',
+        government: 'เสริมสิทธิเบิกจ่ายตรงและค่าห้องพิเศษ',
+        generalPublic: 'แบ่งจ่ายรายเดือนได้ คุ้มครองครอบคลุม',
+      };
+  }
+}
+

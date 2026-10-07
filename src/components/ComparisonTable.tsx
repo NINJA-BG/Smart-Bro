@@ -6,7 +6,7 @@ import {
   CustomerProfile,
   PaDismembermentSchedule,
 } from '../types';
-import { formatCurrency, analyzeDifferences } from '../data/plans';
+import { formatCurrency, analyzeDifferences, getPlanTargetAudience } from '../data/plans';
 import { MOCK_EXISTING_CUSTOMERS } from '../data/customers';
 import {
   ShieldCheck,
@@ -28,6 +28,13 @@ import {
   ShieldAlert,
   ChevronDown,
   ChevronUp,
+  Eye,
+  Car,
+  Building,
+  Landmark,
+  Users,
+  ArrowLeft,
+  X,
 } from 'lucide-react';
 import { PolicyTermsNotice } from './PolicyTermsNotice';
 
@@ -44,6 +51,9 @@ interface ComparisonTableProps {
   currentAge?: number | null;
   onSelectExistingCustomer?: (customer: CustomerProfile | null) => void;
   onTogglePlan?: (planId: string) => void;
+  onOpenPreview?: () => void;
+  onBackToSelection?: () => void;
+  onSwapPlan?: (oldPlanId: string, newPlanId: string) => void;
 }
 
 export const ComparisonTable: React.FC<ComparisonTableProps> = ({
@@ -59,6 +69,9 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
   currentAge = null,
   onSelectExistingCustomer,
   onTogglePlan,
+  onOpenPreview,
+  onBackToSelection,
+  onSwapPlan,
 }) => {
   const [showCombinedColumn, setShowCombinedColumn] = useState<boolean>(true);
   const [showPaDetails, setShowPaDetails] = useState<boolean>(true);
@@ -362,7 +375,139 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
     >
       {/* iPad-Optimized Integrated Function Toolbar */}
       {!printMode && (
-        <div className="no-print p-3 sm:p-4 bg-slate-50/90 border-b border-slate-200 space-y-2.5">
+        <div className="no-print p-3 sm:p-4 bg-slate-50/90 border-b border-slate-200 space-y-3">
+          {/* Plan Slots Management: เพิ่ม/ลด/แก้ไขแผนในหน้านี้ได้ทันที */}
+          <div className="bg-white p-3 sm:p-3.5 rounded-xl border border-slate-200/90 shadow-2xs space-y-2.5">
+            <div className="flex items-center justify-between gap-2 flex-wrap pb-1.5 border-b border-slate-100">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Layers className="w-4 h-4 text-blue-600" />
+                <span className="text-xs sm:text-sm font-bold text-slate-800">
+                  จัดการแผนที่เปรียบเทียบ ({selectedPlans.length}/3 แผน):
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  (สามารถเพิ่ม ลด หรือเปลี่ยนแผนได้ทันที)
+                </span>
+              </div>
+
+              {onBackToSelection && (
+                <button
+                  type="button"
+                  onClick={onBackToSelection}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                  title="ย้อนกลับไปหน้าแพ็กเกจเลือกแผน"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5 text-blue-600" />
+                  <span>ย้อนกลับไปหน้าเลือกแผน</span>
+                </button>
+              )}
+            </div>
+
+            {/* 3 Interactive Slots Display */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              {[0, 1, 2].map((slotIdx) => {
+                const plan = selectedPlans[slotIdx];
+                const unselectedPlans = allPlans.filter(
+                  (p) => !selectedPlans.some((sp) => sp.id === p.id)
+                );
+
+                if (plan) {
+                  return (
+                    <div
+                      key={plan.id}
+                      className="p-2.5 rounded-xl border border-blue-200 bg-blue-50/50 flex items-center justify-between gap-2 shadow-2xs"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[9.5px] font-bold px-1.5 py-0.2 rounded bg-blue-600 text-white shrink-0">
+                            ช่องที่ {slotIdx + 1}
+                          </span>
+                          <span className="font-bold text-slate-900 text-xs truncate">
+                            {plan.name}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-0.5">
+                          ฿{formatCurrency(plan.monthlyPremium)}/ด.
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {/* Change/Swap dropdown */}
+                        {unselectedPlans.length > 0 && onSwapPlan && (
+                          <div className="relative inline-block">
+                            <select
+                              aria-label={`เปลี่ยนแผนช่องที่ ${slotIdx + 1}`}
+                              value=""
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  onSwapPlan(plan.id, e.target.value);
+                                }
+                              }}
+                              className="text-[10px] font-semibold bg-white border border-slate-200 hover:border-blue-400 text-slate-700 rounded-md px-1.5 py-1 cursor-pointer transition-colors shadow-2xs"
+                              title="เปลี่ยนเป็นแผนอื่น"
+                            >
+                              <option value="" disabled>เปลี่ยนแผน</option>
+                              {unselectedPlans.map((up) => (
+                                <option key={up.id} value={up.id}>
+                                  {up.code} ({formatCurrency(up.monthlyPremium)}/ด.)
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+
+                        {/* Remove button */}
+                        {onTogglePlan && (
+                          <button
+                            type="button"
+                            onClick={() => onTogglePlan(plan.id)}
+                            className="p-1 rounded-md bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-300 cursor-pointer transition-colors shadow-2xs"
+                            title={`ลบ ${plan.name} ออกจากการเปรียบเทียบ`}
+                          >
+                            <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // Empty Slot
+                return (
+                  <div
+                    key={`empty-slot-${slotIdx}`}
+                    className="p-2.5 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/70 flex items-center justify-between gap-2"
+                  >
+                    <div className="text-xs text-slate-400 font-medium">
+                      สล็อตว่างที่ {slotIdx + 1} (ไม่เกิน 3)
+                    </div>
+
+                    {unselectedPlans.length > 0 && onTogglePlan ? (
+                      <select
+                        aria-label={`เพิ่มแผนในสล็อตที่ ${slotIdx + 1}`}
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            onTogglePlan(e.target.value);
+                          }
+                        }}
+                        className="text-[11px] font-bold bg-white border border-blue-300 hover:bg-blue-50 text-blue-700 rounded-lg px-2.5 py-1 cursor-pointer transition-colors shadow-2xs"
+                      >
+                        <option value="" disabled>+ เพิ่มแผนเปรียบเทียบ</option>
+                        {unselectedPlans.map((up) => (
+                          <option key={up.id} value={up.id}>
+                            + {up.name} (฿{formatCurrency(up.monthlyPremium)}/ด.)
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="text-[10px] text-slate-400">ครบทุกแผนแล้ว</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Main Controls Row */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
             {/* View Mode (All vs Differences Only) */}
@@ -443,8 +588,52 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
               <span className="text-slate-500 text-[11px] sm:text-xs">
                 เปรียบเทียบ <strong className="text-slate-800">{selectedPlans.length}</strong> แผน
               </span>
+
+              {onOpenPreview && (
+                <button
+                  type="button"
+                  onClick={onOpenPreview}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-blue-200 bg-blue-50/90 hover:bg-blue-100 text-blue-900 text-[11px] sm:text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                  title="พรีวิวเอกสารข้อเสนอก่อนสั่งพิมพ์หรือส่งออก"
+                >
+                  <Eye className="w-3.5 h-3.5 text-blue-600" />
+                  <span>พรีวิวแผน</span>
+                </button>
+              )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Portfolio Info for Existing Customer holding Motor/Other policies */}
+      {!printMode && existingCustomer && existingCustomer.policies && existingCustomer.policies.length > 1 && (
+        <div className="no-print px-3.5 py-2 bg-blue-50/60 border-b border-blue-100 flex items-center justify-between gap-2 text-xs flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-bold text-blue-900 flex items-center gap-1">
+              <UserCheck className="w-3.5 h-3.5 text-blue-600" />
+              <span>พอร์ตกรมธรรม์เดิม คุณ{existingCustomer.fullName}:</span>
+            </span>
+            <span className="text-[11px] text-slate-500 font-medium">
+              (ถือครอง {existingCustomer.policies.length} กรมธรรม์)
+            </span>
+            {existingCustomer.policies
+              .filter((p) => p.policyType === 'motor' || p.vehicleDetails)
+              .map((mp, mIdx) => (
+                <span
+                  key={mIdx}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-blue-200 text-[11px] text-blue-950 font-medium shadow-2xs"
+                >
+                  <Car className="w-3 h-3 text-blue-600" />
+                  <span>
+                    {mp.customPlanName || 'ประกันรถยนต์'}
+                    {mp.vehicleDetails?.licensePlate ? ` (${mp.vehicleDetails.licensePlate})` : ''}
+                  </span>
+                </span>
+              ))}
+          </div>
+          <span className="text-[10.5px] text-blue-700 bg-blue-100/60 px-2 py-0.5 rounded">
+            สามารถนำเสนอ Top-up สุขภาพร่วมกับแพ็กเกจเดิมได้
+          </span>
         </div>
       )}
 
@@ -472,10 +661,24 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
                 return (
                   <th
                     key={plan.id}
-                    className="p-3 md:p-3.5 text-center border-r border-sky-600/50 align-top"
+                    className="p-3 md:p-3.5 text-center border-r border-sky-600/50 align-top relative group"
                     style={{ width: columnWidth }}
                   >
                     <div className="flex flex-col items-center gap-1">
+                      {/* Delete button on column header (iPad/Desktop friendly) */}
+                      {onTogglePlan && (
+                        <div className="no-print w-full flex justify-end -mb-2">
+                          <button
+                            type="button"
+                            onClick={() => onTogglePlan(plan.id)}
+                            className="p-0.5 rounded-full bg-sky-900/70 hover:bg-rose-600 text-sky-200 hover:text-white cursor-pointer transition-colors shadow-2xs"
+                            title={`ลบ ${plan.name} ออกจากตาราง`}
+                          >
+                            <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                          </button>
+                        </div>
+                      )}
+
                       {isExistingCustomerPlan && (
                         <span className="inline-block bg-emerald-500 text-white font-black text-[9px] uppercase px-1.5 py-0.2 rounded-full shadow-2xs">
                           แผนเดิมของลูกค้า
@@ -574,6 +777,102 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
                   <span className="block text-[10px] text-sky-700 font-normal">
                     (ช่วงอายุที่สมัครคู่กันได้)
                   </span>
+                </td>
+              )}
+            </tr>
+
+            {/* ============================================================== */}
+            {/* SECTION: ข้อมูลแผนตามกลุ่มเป้าหมาย (เอกชน / ราชการ / ลูกค้าทั่วไป) */}
+            {/* ============================================================== */}
+            <tr className="bg-slate-100/90 text-slate-800 font-bold border-y border-slate-200">
+              <td colSpan={totalColumnsCount} className="py-2 px-3 sm:px-4 text-xs md:text-sm">
+                <span className="inline-flex items-center gap-1.5 text-[#00509d]">
+                  <Users className="w-4 h-4 text-blue-600" />
+                  ความเหมาะสม & จุดเด่นตามกลุ่มผู้ใช้ (เอกชน / ราชการรัฐวิสาหกิจ / ลูกค้าทั่วไป)
+                </span>
+              </td>
+            </tr>
+
+            {/* Row: เอกชน */}
+            <tr className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+              <td className="py-2.5 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-4 sm:pl-5">
+                <div className="flex items-center gap-1.5 font-bold text-blue-900">
+                  <Building className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <span>พนักงานเอกชน (Top-up ปกส.)</span>
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">
+                  เสริมสวัสดิการประกันกลุ่ม / สิทธิประกันสังคม
+                </div>
+              </td>
+              {selectedPlans.map((plan) => {
+                const aud = getPlanTargetAudience(plan.id, plan.targetAudience);
+                return (
+                  <td key={plan.id} className="py-2 px-3 sm:px-4 border-r border-slate-100 text-left text-xs">
+                    <div className="p-2 rounded-lg bg-blue-50/70 border border-blue-100 text-[11px] text-blue-950 font-medium leading-relaxed">
+                      {aud.privateSector}
+                    </div>
+                  </td>
+                );
+              })}
+              {isCombinedVisible && combinedTotals && (
+                <td className="py-2 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8] text-xs font-semibold text-blue-900">
+                  สิทธิความคุ้มครองเสริมครอบคลุมทั้ง OPD/IPD
+                </td>
+              )}
+            </tr>
+
+            {/* Row: ราชการ */}
+            <tr className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+              <td className="py-2.5 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-4 sm:pl-5">
+                <div className="flex items-center gap-1.5 font-bold text-indigo-900">
+                  <Landmark className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                  <span>ราชการ / รัฐวิสาหกิจ</span>
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">
+                  เสริมสิทธิเบิกตรง ค่าห้องพิเศษเดี่ยว & คลินิกนอกเวลา
+                </div>
+              </td>
+              {selectedPlans.map((plan) => {
+                const aud = getPlanTargetAudience(plan.id, plan.targetAudience);
+                return (
+                  <td key={plan.id} className="py-2 px-3 sm:px-4 border-r border-slate-100 text-left text-xs">
+                    <div className="p-2 rounded-lg bg-indigo-50/70 border border-indigo-100 text-[11px] text-indigo-950 font-medium leading-relaxed">
+                      {aud.government}
+                    </div>
+                  </td>
+                );
+              })}
+              {isCombinedVisible && combinedTotals && (
+                <td className="py-2 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8] text-xs font-semibold text-indigo-900">
+                  เสริมส่วนเกินสิทธิเบิกจ่ายตรง + ชดเชยรายวัน
+                </td>
+              )}
+            </tr>
+
+            {/* Row: ลูกค้าทั่วไป */}
+            <tr className="border-b border-slate-200 hover:bg-slate-50/70 transition-colors">
+              <td className="py-2.5 px-3 sm:px-4 text-xs md:text-sm border-r border-slate-100 pl-4 sm:pl-5">
+                <div className="flex items-center gap-1.5 font-bold text-emerald-900">
+                  <Users className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>ลูกค้าทั่วไป (อาชีพอิสระ)</span>
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">
+                  แบ่งชำระรายเดือน เบาใจ ไม่ต้องสำรองจ่าย
+                </div>
+              </td>
+              {selectedPlans.map((plan) => {
+                const aud = getPlanTargetAudience(plan.id, plan.targetAudience);
+                return (
+                  <td key={plan.id} className="py-2 px-3 sm:px-4 border-r border-slate-100 text-left text-xs">
+                    <div className="p-2 rounded-lg bg-emerald-50/70 border border-emerald-100 text-[11px] text-emerald-950 font-medium leading-relaxed">
+                      {aud.generalPublic}
+                    </div>
+                  </td>
+                );
+              })}
+              {isCombinedVisible && combinedTotals && (
+                <td className="py-2 px-3 sm:px-4 text-center bg-[#f0f7fd] border-l-2 border-[#b9ddf8] text-xs font-semibold text-emerald-900">
+                  แพ็กเกจคุ้มครองครบวงจร แบ่งจ่ายรายเดือนสบาย
                 </td>
               )}
             </tr>

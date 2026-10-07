@@ -16,6 +16,8 @@ import {
   CheckCircle2,
   Sparkles,
   ChevronRight,
+  Car,
+  Home,
 } from 'lucide-react';
 
 interface SmileSaleSearchCardProps {
@@ -315,43 +317,83 @@ export const SmileSaleSearchCard: React.FC<SmileSaleSearchCardProps> = ({
                   หรือคลิกเลือกลูกค้าทดสอบ:
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                  {MOCK_EXISTING_CUSTOMERS.map((cust) => (
-                    <button
-                      key={cust.idCard}
-                      type="button"
-                      onClick={() => handleSelectMockCustomer(cust)}
-                      className={`p-2 rounded-lg border text-left text-xs transition-all cursor-pointer flex items-center justify-between ${
-                        foundCustomer?.idCard === cust.idCard
-                          ? 'border-emerald-500 bg-emerald-50/80 ring-1 ring-emerald-400'
-                          : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/50'
-                      }`}
-                    >
-                      <div>
-                        <div className="font-bold text-slate-900 text-xs">
-                          คุณ{cust.fullName} ({cust.age} ปี)
+                  {MOCK_EXISTING_CUSTOMERS.map((cust) => {
+                    const motorPolicy = cust.policies?.find((p) => p.policyType === 'motor' || p.vehicleDetails);
+                    const totalPolicies = cust.policies?.length || 1;
+
+                    return (
+                      <button
+                        key={cust.idCard}
+                        type="button"
+                        onClick={() => handleSelectMockCustomer(cust)}
+                        className={`p-2 rounded-lg border text-left text-xs transition-all cursor-pointer flex items-center justify-between ${
+                          foundCustomer?.idCard === cust.idCard
+                            ? 'border-emerald-500 bg-emerald-50/80 ring-1 ring-emerald-400'
+                            : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/50'
+                        }`}
+                      >
+                        <div>
+                          <div className="font-bold text-slate-900 text-xs flex items-center gap-1.5 flex-wrap">
+                            <span>คุณ{cust.fullName} ({cust.age} ปี)</span>
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-100 text-blue-800 font-medium">
+                              {totalPolicies} กรมธรรม์
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">
+                            สุขภาพ: {cust.existingPlanId.replace('plan-', '').toUpperCase()}
+                            {motorPolicy?.vehicleDetails?.licensePlate && (
+                              <span className="text-blue-700 ml-1.5 font-medium">
+                                • 🚗 รถ {motorPolicy.vehicleDetails.insuranceClass || ''} ({motorPolicy.vehicleDetails.licensePlate})
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-[10px] text-slate-500">
-                          กรมธรรม์ {cust.policyNumber} • แผน {cust.existingPlanId.replace('plan-', '').toUpperCase()}
-                        </div>
-                      </div>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                    </button>
-                  ))}
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" />
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Found customer result box */}
-              {foundCustomer && (
-                <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-300 text-xs">
-                  <div className="flex items-center gap-1.5 text-emerald-900 font-bold text-xs mb-0.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>พบข้อมูลลูกค้าเดิม: คุณ{foundCustomer.fullName}</span>
+              {foundCustomer && (() => {
+                const motorPolicy = foundCustomer.policies?.find((p) => p.policyType === 'motor' || p.vehicleDetails);
+                const firePolicy = foundCustomer.policies?.find((p) => p.policyType === 'fire');
+                const totalPolicies = foundCustomer.policies?.length || 1;
+
+                return (
+                  <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-300 text-xs space-y-1">
+                    <div className="flex items-center justify-between gap-1 text-emerald-900 font-bold text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>พบข้อมูลลูกค้าเดิม: คุณ{foundCustomer.fullName}</span>
+                      </div>
+                      <span className="text-[10.5px] px-2 py-0.5 rounded bg-emerald-200/80 text-emerald-900 font-semibold">
+                        ถือครอง {totalPolicies} กรมธรรม์
+                      </span>
+                    </div>
+
+                    <p className="text-slate-600 text-[10.5px]">
+                      เลขบัตร: <strong>{foundCustomer.idCard}</strong> • อายุ: {foundCustomer.age} ปี • แผนสุขภาพเดิม: <strong>{allPlans.find(p => p.id === foundCustomer.existingPlanId)?.name || foundCustomer.existingPlanId}</strong>
+                    </p>
+
+                    {(motorPolicy || firePolicy) && (
+                      <div className="pt-1 border-t border-emerald-200/70 flex items-center gap-2 text-[10.5px] text-slate-700 flex-wrap">
+                        {motorPolicy && (
+                          <span className="inline-flex items-center gap-1 text-blue-900 bg-white px-2 py-0.5 rounded border border-blue-200 font-medium">
+                            🚗 ประกันรถ: {motorPolicy.customPlanName || 'ประกันรถยนต์'} {motorPolicy.vehicleDetails?.licensePlate ? `(${motorPolicy.vehicleDetails.licensePlate})` : ''}
+                          </span>
+                        )}
+                        {firePolicy && (
+                          <span className="inline-flex items-center gap-1 text-amber-900 bg-white px-2 py-0.5 rounded border border-amber-200 font-medium">
+                            🏠 ประกันอัคคีภัย: {firePolicy.customPlanName}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <p className="text-slate-600 text-[10px]">
-                    กรมธรรม์: <strong>{foundCustomer.policyNumber}</strong> • อายุ: {foundCustomer.age} ปี • แผนปัจจุบัน: {allPlans.find(p => p.id === foundCustomer.existingPlanId)?.name || foundCustomer.existingPlanId}
-                  </p>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Actions */}
               <div className="grid grid-cols-2 gap-2 pt-1">

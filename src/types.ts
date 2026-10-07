@@ -46,6 +46,12 @@ export interface AgeEligibility {
   description?: string;
 }
 
+export interface PlanTargetAudience {
+  privateSector: string; // เอกชน (พนักงานบริษัท / ประกันสังคม)
+  government: string; // ราชการ / รัฐวิสาหกิจ (เสริมสิทธิเบิกตรง)
+  generalPublic: string; // ลูกค้าทั่วไป / อาชีพอิสระ
+}
+
 export interface InsurancePlan {
   id: string;
   code: string;
@@ -56,6 +62,7 @@ export interface InsurancePlan {
   description: string;
   monthlyPremium: number;
   annualPremium: number;
+  targetAudience?: PlanTargetAudience;
   
   // Age eligibility criteria
   minAge: number;
@@ -82,12 +89,31 @@ export interface InsurancePlan {
   paSchedule?: PaDismembermentSchedule;
 }
 
+export type CustomerPolicyCategory = 'health' | 'pa' | 'motor' | 'fire' | 'life' | 'other';
+
+export interface VehiclePolicyDetails {
+  licensePlate?: string; // ทะเบียนรถ e.g. '3ขก-8821 กทม.'
+  brandModel?: string; // ยี่ห้อ/รุ่น e.g. 'Toyota Corolla Cross Hybrid'
+  insuranceClass?: string; // ประเภทประกัน e.g. 'ชั้น 1', 'ชั้น 2+', 'ชั้น 3+', 'พ.ร.บ.'
+  repairType?: string; // การซ่อม e.g. 'ซ่อมห้าง', 'ซ่อมอู่'
+  sumInsured?: number; // ทุนประกันภัย (บาท)
+}
+
 export interface CustomerPolicyItem {
   policyNumber: string;
-  planId: string;
+  planId?: string; // ID ของแผนสุขภาพ/PA ในระบบ (ถ้าตรงกับ allPlans)
+  policyType?: CustomerPolicyCategory; // 'health' | 'pa' | 'motor' | 'fire' | 'life' | 'other'
+  customPlanName?: string; // ชื่อแผนสำหรับประกันรถยนต์/อัคคีภัย/ชีวิต
+  companyName?: string; // บริษัทประกันภัย เช่น 'สยามสไมล์ / เมืองไทยประกันภัย'
   startDate: string;
+  endDate?: string; // วันที่สิ้นสุดความคุ้มครอง
+  monthlyPremium?: number; // เบี้ยประกันรายเดือน (บาท)
+  annualPremium?: number; // เบี้ยประกันรายปี (บาท)
+  sumInsured?: number; // ทุนประกันภัย (บาท)
   lossClaimRate?: number;
   lossClaimStatus?: string;
+  vehicleDetails?: VehiclePolicyDetails;
+  notes?: string;
 }
 
 export interface CustomerProfile {
