@@ -25,6 +25,8 @@ interface SmileSaleHeaderProps {
   exportMeta: ExportMeta;
   existingCustomer?: CustomerProfile | null;
   selectedPlansCount?: number;
+  currentView?: 'selection' | 'comparison' | 'premium-code';
+  onNavigateView?: (view: 'selection' | 'comparison' | 'premium-code') => void;
 }
 
 export const SmileSaleHeader: React.FC<SmileSaleHeaderProps> = ({
@@ -39,6 +41,8 @@ export const SmileSaleHeader: React.FC<SmileSaleHeaderProps> = ({
   exportMeta,
   existingCustomer,
   selectedPlansCount = 0,
+  currentView = 'selection',
+  onNavigateView,
 }) => {
   const agentDisplayName = exportMeta.agentFirstName
     ? `${exportMeta.agentFirstName} (${exportMeta.agentOfficeCode || '05741'})`
@@ -59,9 +63,25 @@ export const SmileSaleHeader: React.FC<SmileSaleHeaderProps> = ({
             <Menu className="w-5 h-5" />
           </button>
 
-          <h1 className="text-lg sm:text-xl font-extrabold text-[#00509d] tracking-tight">
-            Smart Brochure
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-base sm:text-lg md:text-xl font-extrabold text-[#00509d] tracking-tight">
+              {currentView === 'premium-code' ? 'ระบบโค๊ดเบี้ยประกันภัย' : 'Smart Brochure'}
+            </h1>
+            {currentView === 'premium-code' ? (
+              <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-300 hidden sm:inline-block">
+                ชีวิต • บ้าน • เดินทาง
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onNavigateView?.('premium-code')}
+                className="text-[11px] bg-blue-50 hover:bg-blue-100 text-[#00509d] font-bold px-2.5 py-1 rounded-lg border border-blue-200 transition-colors hidden sm:inline-flex items-center gap-1 cursor-pointer"
+                title="เปิดระบบคำนวณโค๊ดเบี้ยประกัน"
+              >
+                <span>โค๊ดเบี้ยประกัน</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Right Action Icons & User Profile */}

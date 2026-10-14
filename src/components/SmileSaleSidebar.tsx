@@ -11,6 +11,9 @@ import {
   ChevronUp,
   X,
   Sparkles,
+  Calculator,
+  HeartHandshake,
+  Plane,
 } from 'lucide-react';
 
 interface SmileSaleSidebarProps {
@@ -28,6 +31,7 @@ export const SmileSaleSidebar: React.FC<SmileSaleSidebarProps> = ({
 }) => {
   const [isReportsOpen, setIsReportsOpen] = useState(false);
   const [isBrochureOpen, setIsBrochureOpen] = useState(true);
+  const [isCodeMenuOpen, setIsCodeMenuOpen] = useState(true);
 
   return (
     <>
@@ -217,6 +221,102 @@ export const SmileSaleSidebar: React.FC<SmileSaleSidebarProps> = ({
                 >
                   <Settings className="w-3.5 h-3.5 text-sky-200" />
                   <span>จัดการสิทธิประโยชน์ Motor</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* โค๊ดเบี้ยประกัน (Life, Home, Travel) */}
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                setIsCodeMenuOpen(!isCodeMenuOpen);
+                onSelectMenu?.('code-all');
+              }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition-colors ${
+                activeMenu.startsWith('code-') || activeMenu === 'premium-code'
+                  ? 'bg-amber-400 text-slate-900 font-bold shadow-sm'
+                  : 'text-white/90 hover:bg-white/10 hover:text-white bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Calculator className="w-4 h-4 text-amber-300 group-hover:text-slate-900" />
+                <span className="font-bold">โค๊ดเบี้ยประกัน</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                  activeMenu.startsWith('code-') || activeMenu === 'premium-code'
+                    ? 'bg-slate-900/20 text-slate-900'
+                    : 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
+                }`}>
+                  ใหม่
+                </span>
+                {isCodeMenuOpen ? (
+                  <ChevronUp className="w-4 h-4 opacity-75" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 opacity-75" />
+                )}
+              </div>
+            </button>
+
+            {isCodeMenuOpen && (
+              <div className="pl-6 pr-2 pt-1.5 pb-1 space-y-1">
+                {/* ประกันชีวิต */}
+                <button
+                  type="button"
+                  onClick={() => onSelectMenu?.('code-life')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-xs font-medium transition-colors ${
+                    activeMenu === 'code-life'
+                      ? 'bg-rose-500 text-white font-bold shadow-xs'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <HeartHandshake className="w-3.5 h-3.5 text-rose-300" />
+                    <span>ประกันชีวิต</span>
+                  </div>
+                  <span className="text-[9px] bg-white/20 text-white px-1.5 py-0.2 rounded font-mono">
+                    Life
+                  </span>
+                </button>
+
+                {/* ประกันบ้าน */}
+                <button
+                  type="button"
+                  onClick={() => onSelectMenu?.('code-home')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-xs font-medium transition-colors ${
+                    activeMenu === 'code-home'
+                      ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Home className="w-3.5 h-3.5 text-emerald-300" />
+                    <span>ประกันบ้าน</span>
+                  </div>
+                  <span className="text-[9px] bg-white/20 text-white px-1.5 py-0.2 rounded font-mono">
+                    Home
+                  </span>
+                </button>
+
+                {/* ประกันเดินทาง */}
+                <button
+                  type="button"
+                  onClick={() => onSelectMenu?.('code-travel')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-xs font-medium transition-colors ${
+                    activeMenu === 'code-travel'
+                      ? 'bg-blue-600 text-white font-bold shadow-xs'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Plane className="w-3.5 h-3.5 text-sky-300" />
+                    <span>ประกันเดินทาง</span>
+                  </div>
+                  <span className="text-[9px] bg-white/20 text-white px-1.5 py-0.2 rounded font-mono">
+                    Travel
+                  </span>
                 </button>
               </div>
             )}

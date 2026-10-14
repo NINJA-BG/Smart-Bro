@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { INSURANCE_PLANS } from './data/plans';
 import { MOCK_EXISTING_CUSTOMERS } from './data/customers';
-import { ViewFilterMode, ExportMeta, CustomerProfile, ComparisonHistoryItem, InsurancePlan } from './types';
+import { ViewFilterMode, ExportMeta, CustomerProfile, ComparisonHistoryItem, InsurancePlan, CustomerPolicyItem } from './types';
 import { SmileSaleSidebar } from './components/SmileSaleSidebar';
 import { SmileSaleHeader } from './components/SmileSaleHeader';
 import { SmileSaleSearchCard } from './components/SmileSaleSearchCard';
@@ -16,6 +16,8 @@ import { ExportModal } from './components/ExportModal';
 import { HistoryModal } from './components/HistoryModal';
 import { PlanSettingsModal } from './components/PlanSettingsModal';
 import { PlanPreviewModal } from './components/PlanPreviewModal';
+import { PremiumCodeLookup } from './components/PremiumCodeLookup';
+import { InsuranceTypeCode } from './data/premiumCodes';
 import { triggerPrint } from './utils/pdfExport';
 import {
   loadStoredPlans,
@@ -66,7 +68,8 @@ export default function App() {
 
   // Selected plans for comparison (max 3 plans, empty by default, user selects freely)
   const [selectedPlanIds, setSelectedPlanIds] = useState<string[]>([]);
-  const [currentView, setCurrentView] = useState<'selection' | 'comparison'>('selection');
+  const [currentView, setCurrentView] = useState<'selection' | 'comparison' | 'premium-code'>('selection');
+  const [premiumCodeType, setPremiumCodeType] = useState<InsuranceTypeCode>('life');
 
   const [filterMode, setFilterMode] = useState<ViewFilterMode>('all');
   const [highlightDiffs, setHighlightDiffs] = useState<boolean>(true);
@@ -175,6 +178,26 @@ export default function App() {
     setUserDob('');
     setSelectedPlanIds([]);
     showToast('รีเซ็ตเงื่อนไขการค้นหาเรียบร้อยแล้ว');
+  };
+
+  // Assign or purchase a plan code for a customer
+  const handleAssignPlanToCustomer = (customer: CustomerProfile, newPolicy: CustomerPolicyItem) => {
+    const matched = MOCK_EXISTING_CUSTOMERS.find((c) => c.idCard === customer.idCard);
+    if (matched) {
+      if (!matched.policies) matched.policies = [];
+      matched.policies = [newPolicy, ...matched.policies.filter((p) => p.policyNumber !== newPolicy.policyNumber)];
+    }
+
+    const updatedCustomer: CustomerProfile = {
+      ...customer,
+      policies: [newPolicy, ...(customer.policies || []).filter((p) => p.policyNumber !== newPolicy.policyNumber)],
+    };
+
+    setExistingCustomer(updatedCustomer);
+    setExportMeta((prev) => ({
+      ...prev,
+      customerName: customer.fullName,
+    }));
   };
 
   const handleTogglePlan = (planId: string) => {
@@ -321,6 +344,21 @@ export default function App() {
           } else if (menu === 'smart-brochure') {
             setCurrentView('selection');
             window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else if (menu === 'code-life') {
+            setPremiumCodeType('life');
+            setCurrentView('premium-code');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else if (menu === 'code-home') {
+            setPremiumCodeType('home');
+            setCurrentView('premium-code');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else if (menu === 'code-travel') {
+            setPremiumCodeType('travel');
+            setCurrentView('premium-code');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else if (menu === 'code-all' || menu === 'premium-code') {
+            setCurrentView('premium-code');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         }}
       />
@@ -344,11 +382,33 @@ export default function App() {
           exportMeta={exportMeta}
           existingCustomer={existingCustomer}
           selectedPlansCount={selectedPlans.length}
+          currentView={currentView}
+          onNavigateView={(view) => {
+            setCurrentView(view);
+            if (view === 'premium-code') {
+              setActiveMenu('code-all');
+            } else {
+              setActiveMenu('smart-brochure');
+            }
+          }}
         />
 
         {/* Page Content Container */}
         <main className="flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-5 max-w-7xl w-full mx-auto space-y-4 sm:space-y-5">
-          {currentView === 'selection' ? (
+          {currentView === 'premium-code' ? (
+            <PremiumCodeLookup
+              initialType={premiumCodeType}
+              existingCustomer={existingCustomer}
+              currentAge={userAge}
+              onBackToBrochure={() => {
+                setCurrentView('selection');
+                setActiveMenu('smart-brochure');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onShowToast={showToast}
+              onAssignPlanToCustomer={handleAssignPlanToCustomer}
+            />
+          ) : currentView === 'selection' ? (
             <>
               {/* Centered Hero Header exactly as in screenshot */}
               <section className="text-center pt-1 sm:pt-2">
